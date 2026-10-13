@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Layout from '../components/Layout.jsx'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import SuccessBanner from '../components/SuccessBanner.jsx'
+import { QRCodeCanvas } from 'qrcode.react'
 
 export default function RecordNew() {
   const [files, setFiles] = useState([])
@@ -34,6 +35,19 @@ export default function RecordNew() {
   const [cameraMode, setCameraMode] = useState(false)
   const [voiceInput, setVoiceInput] = useState(false)
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
+  const [savedAnimal, setSavedAnimal] = useState(null)
+
+  const downloadCreatedQR = (animalId) => {
+    const canvas = document.getElementById(`created-animal-qr-${animalId}`)
+    if (!canvas) return
+    const pngUrl = canvas.toDataURL('image/png')
+    const downloadLink = document.createElement('a')
+    downloadLink.href = pngUrl
+    downloadLink.download = `pashuvision-animal-${animalId}-qr.png`
+    document.body.appendChild(downloadLink)
+    downloadLink.click()
+    document.body.removeChild(downloadLink)
+  }
 
   // Helper function to format age display
   const formatAgeDisplay = (ageMonths) => {
@@ -535,10 +549,12 @@ export default function RecordNew() {
         throw new Error(errorMsg);
       }
       
+      const created = await res.json()
+      setSavedAnimal(created)
       resetForm()
-      setSuccess('Record saved successfully! Breed information has been added to the main database.')
+      setSuccess('Animal registered successfully! Deterministic QR code generated.')
       setError('')
-      // Auto-dismiss success message after 5 seconds
+      // Auto-dismiss success banner after 5 seconds
       setTimeout(() => setSuccess(''), 5000)
       
     } catch (e) {
@@ -605,16 +621,202 @@ export default function RecordNew() {
       
       <div className={`container ${error || success ? 'container-with-banner' : ''}`}>
         
-        <div className="card">
+        {/* Post-Registration Success Card with Deterministic QR */}
+        {savedAnimal && (
+          <div style={{
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)',
+            border: '2px solid #86efac',
+            borderRadius: '16px',
+            padding: '24px',
+            marginBottom: '24px',
+            boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.15)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '32px' }}>🎉</span>
+              <div>
+                <h2 style={{ margin: 0, color: '#166534', fontSize: '1.4rem', fontWeight: 'bold' }}>
+                  Animal Registered Successfully!
+                </h2>
+                <p style={{ margin: 0, color: '#15803d', fontSize: '13px' }}>
+                  Stable identifier assigned and cryptographically anchored.
+                </p>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '20px',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              border: '1px solid #dcfce7'
+            }}>
+              {/* Left Column: Registered Attributes */}
+              <div>
+                <h4 style={{ margin: '0 0 12px 0', color: '#1f2937', fontSize: '14px', textTransform: 'uppercase' }}>
+                  Animal Identification
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                  <div>
+                    <span style={{ color: '#6b7280', fontSize: '11px', display: 'block' }}>ANIMAL ID</span>
+                    <strong style={{ fontFamily: '"Times New Roman", Times, serif', color: '#111827' }}>{savedAnimal.id}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280', fontSize: '11px', display: 'block' }}>EAR TAG NUMBER</span>
+                    <strong style={{ fontFamily: '"Times New Roman", Times, serif', color: '#166534' }}>{savedAnimal.ear_tag || savedAnimal.earTag || 'N/A'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280', fontSize: '11px', display: 'block' }}>SPECIES / BREED</span>
+                    <span>{savedAnimal.species || 'Cattle'} &bull; {savedAnimal.breed || savedAnimal.predictedBreed || 'Unknown'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280', fontSize: '11px', display: 'block' }}>OWNER</span>
+                    <span>{savedAnimal.owner_name || savedAnimal.ownerName || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  <button
+                    onClick={() => window.location.href = `/records?id=${encodeURIComponent(savedAnimal.id)}`}
+                    style={{
+                      padding: '9px 18px',
+                      borderRadius: '8px',
+                      backgroundColor: '#16a34a',
+                      color: 'white',
+                      border: 'none',
+                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    📋 View in Records
+                  </button>
+
+                  <button
+                    onClick={() => setSavedAnimal(null)}
+                    style={{
+                      padding: '9px 18px',
+                      borderRadius: '8px',
+                      backgroundColor: '#f1f5f9',
+                      color: '#475569',
+                      border: '1px solid #cbd5e1',
+                      fontWeight: 'bold',
+                      fontSize: '13px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ➕ Register Another
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Deterministic QR Code */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div style={{
+                  padding: '12px',
+                  background: 'white',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+                }}>
+                  <QRCodeCanvas
+                    id={`created-animal-qr-${savedAnimal.id}`}
+                    value={JSON.stringify({
+                      protocol: 'pashuvision',
+                      version: '1.0',
+                      type: 'animal',
+                      id: savedAnimal.id,
+                      earTag: savedAnimal.ear_tag || savedAnimal.earTag || ''
+                    })}
+                    size={170}
+                    level="H"
+                    includeMargin={true}
+                  />
+                </div>
+                <span style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px' }}>
+                  🔒 Stable PII-free QR Identifier
+                </span>
+                <button
+                  onClick={() => downloadCreatedQR(savedAnimal.id)}
+                  style={{
+                    marginTop: '10px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    backgroundColor: '#0284c7',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  📥 Download QR (PNG)
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="card pv-record-new">
+          <style>{`
+            .pv-record-new h1,
+            .pv-record-new h2,
+            .pv-record-new h3 {
+              color: #E8F1F8 !important;
+            }
+            .pv-record-new label {
+              color: #E2E8F0 !important;
+              font-weight: 600;
+            }
+            .pv-record-new .input,
+            .pv-record-new .select,
+            .pv-record-new .textarea,
+            .pv-record-new .file {
+              color: #E8F1F8 !important;
+              background-color: #0e2238 !important;
+              border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            }
+            .pv-record-new .input:focus,
+            .pv-record-new .select:focus,
+            .pv-record-new .textarea:focus {
+              border-color: #11a36a !important;
+              box-shadow: 0 0 0 2px rgba(17, 163, 106, 0.3) !important;
+            }
+            .pv-record-new .input::placeholder,
+            .pv-record-new .textarea::placeholder {
+              color: #94A3B8 !important;
+              opacity: 1 !important;
+            }
+            .pv-record-new select option {
+              background-color: #0e2238 !important;
+              color: #E8F1F8 !important;
+            }
+            .pv-record-new .btn.secondary {
+              background-color: #1565C0 !important;
+              color: #FFFFFF !important;
+              border: none !important;
+            }
+            .pv-record-new .btn.secondary:hover {
+              background-color: #0D47A1 !important;
+            }
+          `}</style>
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1>📷 Capture New Animal</h1>
+            <h1 style={{ color: '#E8F1F8' }}>📷 Capture New Animal</h1>
             <div className="row" style={{ gap: 8, alignItems: 'center' }}>
               <div style={{ 
-                padding: '4px 8px', 
-                borderRadius: '4px', 
-                backgroundColor: isOffline ? '#F44336' : '#4CAF50',
-                color: 'white',
-                fontSize: '12px'
+                padding: '4px 10px', 
+                borderRadius: '6px', 
+                backgroundColor: isOffline ? '#DC2626' : '#15803D',
+                color: '#FFFFFF',
+                fontSize: '12px',
+                fontWeight: '600'
               }}>
                 {isOffline ? '🔴 Offline Mode' : '🟢 Online'}
               </div>
@@ -623,10 +825,10 @@ export default function RecordNew() {
 
           {/* Image Capture Section */}
           <div className="card" style={{ marginTop: 16 }}>
-            <h3>Image Capture</h3>
+            <h3 style={{ color: '#E8F1F8' }}>Image Capture</h3>
             <div className="row" style={{ gap: 12, marginBottom: 16 }}>
               <input className="file" type="file" accept="image/*" multiple onChange={onFiles} />
-              <button className="btn secondary" onClick={captureFromCamera}>
+              <button className="btn secondary" onClick={captureFromCamera} style={{ color: '#FFFFFF', backgroundColor: '#1565C0', border: 'none' }}>
                 Camera
               </button>
             </div>
@@ -666,7 +868,7 @@ export default function RecordNew() {
               )}
             
             <div className="row" style={{ gap: 8, marginTop: 16 }}>
-              <button className="btn" onClick={predict} disabled={!files.length || predicting}>
+              <button className="btn" onClick={predict} disabled={!files.length || predicting} style={{ color: '#FFFFFF', backgroundColor: '#15803D', border: 'none' }}>
                 {predicting ? 'Analyzing...' : 'AI Breed Prediction'}
               </button>
             </div>
@@ -674,8 +876,8 @@ export default function RecordNew() {
             {predicting && (
               <div className="card" style={{ marginTop: 16, backgroundColor: '#e3f2fd', textAlign: 'center' }}>
                 <div style={{ fontSize: '48px', marginBottom: 16 }}>AI</div>
-                <h4>AI Analyzing Image...</h4>
-                <p style={{ color: 'var(--color-text-muted)', marginBottom: 8 }}>
+                <h4 style={{ color: '#1565C0' }}>AI Analyzing Image...</h4>
+                <p style={{ color: '#334155', marginBottom: 8 }}>
                   Please wait while our AI analyzes the animal image
                 </p>
                 <p style={{ 
@@ -839,7 +1041,7 @@ export default function RecordNew() {
 
           {/* Location Section */}
           <div className="card" style={{ marginTop: 16 }}>
-            <h3>📍 Location & GPS</h3>
+            <h3 style={{ color: '#E8F1F8' }}>📍 Location & GPS</h3>
             {locationError && (
               <div style={{ 
                 padding: '8px 12px', 
@@ -853,10 +1055,10 @@ export default function RecordNew() {
               </div>
             )}
             <div className="row" style={{ gap: 8, alignItems: 'center' }}>
-              <button className="btn secondary" onClick={getGps}>
+              <button className="btn secondary" onClick={getGps} style={{ color: '#FFFFFF', backgroundColor: '#1565C0', border: 'none' }}>
                 📍 Get GPS Location
               </button>
-              <span style={{ color: 'var(--color-muted)' }}>
+              <span style={{ color: '#CBD5E1' }}>
                 {gps.lat && gps.lng ? 
                   `${gps.lat.toFixed(6)}, ${gps.lng.toFixed(6)} (±${Math.round(gps.accuracy)}m)` : 
                   'No location captured'
@@ -867,7 +1069,7 @@ export default function RecordNew() {
 
           {/* Animal Details Form */}
           <div className="card" style={{ marginTop: 16 }}>
-            <h3>Animal Details</h3>
+            <h3 style={{ color: '#E8F1F8' }}>Animal Details</h3>
             
             {/* AI Predicted Breed Display */}
             {form.predictedBreed && (
@@ -899,7 +1101,7 @@ export default function RecordNew() {
                 </div>
                 <div style={{
                   fontSize: '1rem',
-                  color: '#4caf50',
+                  color: '#15803d',
                   fontWeight: '600'
                 }}>
                   Confidence: {((form.breedConfidence || 0) * 100).toFixed(1)}%
@@ -956,7 +1158,7 @@ export default function RecordNew() {
                     placeholder="Years" 
                     style={{ flex: 1 }}
                   />
-                  <span style={{ color: 'var(--color-text-muted)', fontWeight: 'bold' }}>yr</span>
+                  <span style={{ color: '#CBD5E1', fontWeight: 'bold' }}>yr</span>
                   <input 
                     className="input" 
                     type="number" 
@@ -976,11 +1178,11 @@ export default function RecordNew() {
                     min="0"
                     max="11"
                   />
-                  <span style={{ color: 'var(--color-text-muted)', fontWeight: 'bold' }}>months</span>
+                  <span style={{ color: '#CBD5E1', fontWeight: 'bold' }}>months</span>
                 </div>
                 <div style={{
                   fontSize: '0.8rem',
-                  color: 'var(--color-text-muted)',
+                  color: '#94A3B8',
                   marginTop: '4px',
                   fontStyle: 'italic'
                 }}>
@@ -1040,7 +1242,7 @@ export default function RecordNew() {
                   className="btn secondary" 
                   onClick={startVoiceInput}
                   disabled={voiceInput}
-                  style={{ fontSize: '12px', padding: '4px 8px' }}
+                  style={{ color: '#FFFFFF', backgroundColor: '#1565C0', border: 'none', fontSize: '12px', padding: '4px 8px' }}
                 >
                   {voiceInput ? '🎤 Listening...' : '🎤 Voice Input'}
                 </button>
@@ -1059,11 +1261,11 @@ export default function RecordNew() {
           <div className="card" style={{ marginTop: 16 }}>
             <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <button className="btn" disabled={saving || !files.length} onClick={save}>
+                <button className="btn" disabled={saving || !files.length} onClick={save} style={{ color: '#FFFFFF', backgroundColor: '#15803D', border: 'none' }}>
                   {saving ? '💾 Saving...' : '💾 Save Animal Record'}
                 </button>
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--color-muted)' }}>
+              <div style={{ fontSize: '12px', color: '#94A3B8' }}>
                 {isOffline ? 'Will sync when online' : 'Saving to server'}
               </div>
             </div>

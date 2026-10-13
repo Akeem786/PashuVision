@@ -1,0 +1,53 @@
+[
+  {
+    "id": "674c4c57-ad85-4300-8f64-71f1359c1ebf",
+    "userId": "test-pref-user-456",
+    "title": "Preference Test",
+    "body": "Testing disabled SMS channel",
+    "message": "Testing disabled SMS channel",
+    "data": {
+      "type": "general"
+    },
+    "priority": "medium",
+    "timestamp": "2026-09-19T05:25:43.131Z",
+    "read": false,
+    "type": "general",
+    "ownerName": "Owner",
+    "animalId": null,
+    "dueDate": null
+  },
+  {
+    "id": "21762d13-d9aa-49b7-b785-aeacd950e20e",
+    "userId": "test-pref-user-456",
+    "title": "Preference Test",
+    "body": "Testing disabled SMS channel",
+    "message": "Testing disabled SMS channel",
+    "data": {
+      "type": "general"
+    },
+    "priority": "medium",
+    "timestamp": "2026-09-19T05:26:24.159Z",
+    "read": false,
+    "type": "general",
+    "ownerName": "Owner",
+    "animalId": null,
+    "dueDate": null
+  },
+  {
+    "id": "439e7348-97c3-4e1c-9fd7-eba0bef0b3ff",
+    "userId": "test-user-api-id",
+    "title": "API Test Alert",
+    "body": "System test message via API",
+    "message": "System test message via API",
+    "data": {
+      "type": "general"
+    },
+    "priority": "medium",
+    "timestamp": "2026-09-19T05:26:24.200Z",
+    "read": false,
+    "type": "general",
+    "ownerName": "Tester",
+    "animalId": null,
+    "dueDate": null
+  }
+]

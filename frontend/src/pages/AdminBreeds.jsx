@@ -319,13 +319,74 @@ export default function AdminBreeds() {
           </div>
         )}
 
-        <div className="card">
+        <div className="card pv-breed-data">
+          <style>{`
+            .pv-breed-data h1 {
+              color: #E8F1F8 !important;
+            }
+            .pv-breed-data h3 {
+              color: #E8F1F8 !important;
+            }
+            .pv-breed-data .breed-card {
+              background: linear-gradient(180deg, #132d4b 0%, #0e2338 100%) !important;
+              border: 1px solid rgba(255, 255, 255, 0.12) !important;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+            }
+            .pv-breed-data .breed-card:hover {
+              border-color: rgba(255, 255, 255, 0.22) !important;
+              box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+            }
+            .pv-breed-data .breed-card h4 {
+              color: #FFFFFF !important;
+            }
+            .pv-breed-data .stat-card {
+              background: linear-gradient(180deg, #132d4b 0%, #0e2338 100%) !important;
+              border: 1px solid rgba(255, 255, 255, 0.12) !important;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+            }
+            .pv-breed-data .stat-card h4 {
+              color: #CBD5E1 !important;
+            }
+            .pv-breed-data .btn-add-breed {
+              background-color: #15803D !important;
+              color: #FFFFFF !important;
+              border: none !important;
+            }
+            .pv-breed-data .btn-add-breed:hover {
+              background-color: #166534 !important;
+            }
+            .pv-breed-data .btn-view {
+              background-color: #1565C0 !important;
+              color: #FFFFFF !important;
+              border: none !important;
+            }
+            .pv-breed-data .btn-view:hover {
+              background-color: #0D47A1 !important;
+            }
+            .pv-breed-data .btn-edit {
+              background-color: #15803D !important;
+              color: #FFFFFF !important;
+              border: none !important;
+            }
+            .pv-breed-data .btn-edit:hover {
+              background-color: #166534 !important;
+            }
+            .pv-breed-data .btn-delete {
+              background-color: #DC2626 !important;
+              color: #FFFFFF !important;
+              border: none !important;
+            }
+            .pv-breed-data .btn-delete:hover {
+              background-color: #B91C1C !important;
+            }
+          `}</style>
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1>🐄 Breed Data</h1>
+            <h1 style={{ color: '#E8F1F8' }}>🐄 Breed Data</h1>
             <div className="row" style={{ gap: 8 }}>
               <button 
-                className="btn" 
+                className="btn btn-add-breed" 
                 onClick={() => setShowAddBreed(true)}
+                style={{ backgroundColor: '#15803D', color: '#FFFFFF', border: 'none' }}
               >
                 Add Breed
               </button>
@@ -334,29 +395,37 @@ export default function AdminBreeds() {
 
           {/* Breeds List */}
           <div className="card" style={{ marginTop: 16 }}>
-            <h3>Registered Breeds ({breeds.length})</h3>
+            <h3 style={{ color: '#E8F1F8' }}>Registered Breeds ({breeds.length})</h3>
 
             {breeds.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-muted)' }}>
+              <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>B</div>
-                <h3>No breeds registered</h3>
-                <p>Add your first breed to get started.</p>
+                <h3 style={{ color: '#E8F1F8' }}>No breeds registered</h3>
+                <p style={{ color: '#94A3B8' }}>Add your first breed to get started.</p>
               </div>
             ) : (
               <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
                 {breeds.map(breed => (
-                  <div key={breed.id} className="card" style={{ border: '1px solid #e0e0e0' }}>
+                  <div 
+                    key={breed.id} 
+                    className="card breed-card" 
+                    style={{ 
+                      background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)', 
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)'
+                    }}
+                  >
 
                     {/* Breed Info */}
                     <div className="stack" style={{ gap: '8px' }}>
                       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h4 style={{ margin: 0 }}>{breed.name}</h4>
+                        <h4 style={{ margin: 0, color: '#FFFFFF' }}>{breed.name}</h4>
                         {breed.isRareBreed && (
                           <span style={{
                             padding: '2px 6px',
                             borderRadius: '4px',
-                            backgroundColor: '#FF9800',
-                            color: 'white',
+                            backgroundColor: '#B45309',
+                            color: '#FFFFFF',
                             fontSize: '10px',
                             fontWeight: 'bold'
                           }}>
@@ -365,12 +434,12 @@ export default function AdminBreeds() {
                         )}
                       </div>
                       
-                      <div style={{ fontSize: '12px', color: 'var(--color-muted)' }}>
-                        <strong>Origin:</strong> {breed.origin || 'Unknown'}
+                      <div style={{ fontSize: '12px', color: '#CBD5E1' }}>
+                        <strong style={{ color: '#E2E8F0' }}>Origin:</strong> {breed.origin || 'Unknown'}
                       </div>
                       
                       {breed.description && (
-                        <div style={{ fontSize: '12px' }}>
+                        <div style={{ fontSize: '12px', color: '#94A3B8' }}>
                           {breed.description.length > 100 ? 
                             `${breed.description.substring(0, 100)}...` : 
                             breed.description
@@ -379,16 +448,16 @@ export default function AdminBreeds() {
                       )}
 
                       {breed.avgWeight && (
-                        <div style={{ fontSize: '12px' }}>
-                          <strong>Weight:</strong> {breed.avgWeight}kg
+                        <div style={{ fontSize: '12px', color: '#CBD5E1' }}>
+                          <strong style={{ color: '#E2E8F0' }}>Weight:</strong> {breed.avgWeight}kg
                         </div>
                       )}
 
                       {/* Action Buttons */}
                       <div className="row" style={{ gap: '8px', marginTop: '12px' }}>
                         <button
-                          className="btn secondary"
-                          style={{ flex: 1, fontSize: '12px', padding: '6px 12px' }}
+                          className="btn secondary btn-view"
+                          style={{ flex: 1, fontSize: '12px', padding: '6px 12px', backgroundColor: '#1565C0', color: '#FFFFFF', border: 'none' }}
                           onClick={(e) => {
                             e.stopPropagation()
                             // View mode - read-only
@@ -403,8 +472,8 @@ export default function AdminBreeds() {
                           👁️ View
                         </button>
                         <button
-                          className="btn"
-                          style={{ flex: 1, fontSize: '12px', padding: '6px 12px' }}
+                          className="btn btn-edit"
+                          style={{ flex: 1, fontSize: '12px', padding: '6px 12px', backgroundColor: '#15803D', color: '#FFFFFF', border: 'none' }}
                           onClick={(e) => {
                             e.stopPropagation()
                             // Edit mode
@@ -419,8 +488,8 @@ export default function AdminBreeds() {
                           ✏️ Edit
                         </button>
                         <button
-                          className="btn error"
-                          style={{ flex: 1, fontSize: '12px', padding: '6px 12px' }}
+                          className="btn error btn-delete"
+                          style={{ flex: 1, fontSize: '12px', padding: '6px 12px', backgroundColor: '#DC2626', color: '#FFFFFF', border: 'none' }}
                           onClick={(e) => {
                             e.stopPropagation()
                             handleDeleteBreed(breed.id)
@@ -431,8 +500,9 @@ export default function AdminBreeds() {
                       </div>
 
                       {breed.traits?.length > 0 && (
-                        <div style={{ fontSize: '12px', marginTop: '8px' }}>
-                          <strong>Traits:</strong> {breed.traits.join(', ')}
+                        <div style={{ fontSize: '12px', marginTop: '8px', color: '#CBD5E1' }}>
+                          <strong style={{ color: '#E2E8F0' }}>Traits: </strong>
+                          <span style={{ color: '#94A3B8' }}>{breed.traits.join(', ')}</span>
                         </div>
                       )}
                     </div>
@@ -444,17 +514,33 @@ export default function AdminBreeds() {
 
           {/* Breed Statistics */}
           <div className="card" style={{ marginTop: 16 }}>
-            <h3>Breed Statistics</h3>
+            <h3 style={{ color: '#E8F1F8' }}>Breed Statistics</h3>
             <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16 }}>
-              <div className="card" style={{ textAlign: 'center' }}>
-                <h4>Total Breeds</h4>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#2196F3' }}>
+              <div 
+                className="card stat-card" 
+                style={{ 
+                  textAlign: 'center', 
+                  background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)', 
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)'
+                }}
+              >
+                <h4 style={{ color: '#CBD5E1' }}>Total Breeds</h4>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#38BDF8' }}>
                   {breeds.length}
                 </div>
               </div>
-              <div className="card" style={{ textAlign: 'center' }}>
-                <h4>Rare Breeds</h4>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#FF9800' }}>
+              <div 
+                className="card stat-card" 
+                style={{ 
+                  textAlign: 'center', 
+                  background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)', 
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)'
+                }}
+              >
+                <h4 style={{ color: '#CBD5E1' }}>Rare Breeds</h4>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#FBBF24' }}>
                   {breeds.filter(b => b.isRareBreed).length}
                 </div>
               </div>
@@ -477,7 +563,7 @@ export default function AdminBreeds() {
             justifyContent: 'center',
             padding: '20px'
           }}>
-            <div style={{
+            <div className="pv-add-breed-modal" style={{
               backgroundColor: 'white',
               borderRadius: '12px',
               padding: '24px',
@@ -486,8 +572,85 @@ export default function AdminBreeds() {
               maxHeight: '90vh',
               overflow: 'auto'
             }}>
+              <style>{`
+                .pv-add-breed-modal {
+                  font-family: "Times New Roman", Times, serif;
+                }
+                .pv-add-breed-modal h2 {
+                  color: #0f2740 !important;
+                  margin: 0;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal label {
+                  color: #172033 !important;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal .input,
+                .pv-add-breed-modal .textarea,
+                .pv-add-breed-modal select,
+                .pv-add-breed-modal input[type="text"],
+                .pv-add-breed-modal input[type="number"] {
+                  background-color: #ffffff !important;
+                  color: #172033 !important;
+                  border: 1px solid #CBD5E1 !important;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal .input:focus,
+                .pv-add-breed-modal .textarea:focus,
+                .pv-add-breed-modal select:focus,
+                .pv-add-breed-modal input[type="text"]:focus,
+                .pv-add-breed-modal input[type="number"]:focus {
+                  outline: none !important;
+                  border-color: #1565C0 !important;
+                  box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.2) !important;
+                }
+                .pv-add-breed-modal input::placeholder,
+                .pv-add-breed-modal textarea::placeholder {
+                  color: #6B7280 !important;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal select option {
+                  background-color: #ffffff !important;
+                  color: #172033 !important;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal input[type="checkbox"] {
+                  margin-right: 8px;
+                  vertical-align: middle;
+                  accent-color: #1565C0;
+                }
+                .pv-add-breed-modal input[type="file"] {
+                  color: #172033 !important;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal input[type="file"]::file-selector-button {
+                  background-color: #ffffff !important;
+                  color: #172033 !important;
+                  border: 1px solid #CBD5E1 !important;
+                  border-radius: 6px;
+                  padding: 6px 12px;
+                  margin-right: 8px;
+                  cursor: pointer;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal input[type="file"]::file-selector-button:hover {
+                  background-color: #f1f5f9 !important;
+                }
+                .pv-add-breed-modal .btn.secondary {
+                  background-color: #1565C0 !important;
+                  color: #ffffff !important;
+                  border: none !important;
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+                .pv-add-breed-modal .btn.secondary:hover {
+                  background-color: #0D47A1 !important;
+                }
+                .pv-add-breed-modal .btn:not(.secondary) {
+                  font-family: "Times New Roman", Times, serif !important;
+                }
+              `}</style>
               <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2>Add New Breed</h2>
+                <h2 style={{ color: '#0f2740', margin: 0 }}>Add New Breed</h2>
                 <button 
                   className="btn secondary" 
                   onClick={() => setShowAddBreed(false)}
@@ -518,9 +681,9 @@ export default function AdminBreeds() {
                       }}
                       style={{ flex: 1 }}
                     />
-                    {predicting && <span style={{ color: '#666' }}>Predicting...</span>}
+                    {predicting && <span style={{ color: '#4b5563' }}>Predicting...</span>}
                   </div>
-                  <small style={{ color: '#666' }}>Upload an image to auto-fill breed information using AI</small>
+                  <small style={{ color: '#4b5563' }}>Upload an image to auto-fill breed information using AI</small>
                 </div>
 
                 <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -647,7 +810,7 @@ export default function AdminBreeds() {
             justifyContent: 'center',
             padding: '20px'
           }}>
-            <div style={{
+            <div className="pv-breed-modal" style={{
               backgroundColor: 'white',
               borderRadius: '12px',
               padding: '24px',
@@ -656,11 +819,51 @@ export default function AdminBreeds() {
               maxHeight: '90vh',
               overflow: 'auto'
             }}>
+              <style>{`
+                .pv-breed-modal label {
+                  color: #172033 !important;
+                }
+                .pv-breed-modal input,
+                .pv-breed-modal select,
+                .pv-breed-modal textarea {
+                  color: #172033 !important;
+                  background-color: #ffffff;
+                  border: 1px solid #CBD5E1 !important;
+                }
+                .pv-breed-modal input:disabled,
+                .pv-breed-modal input[readonly],
+                .pv-breed-modal select:disabled,
+                .pv-breed-modal textarea:disabled,
+                .pv-breed-modal textarea[readonly] {
+                  color: #172033 !important;
+                  background-color: #F8FAFC !important;
+                  border: 1px solid #CBD5E1 !important;
+                  cursor: not-allowed;
+                }
+                .pv-breed-modal select option {
+                  color: #172033 !important;
+                  background-color: #ffffff !important;
+                }
+                .pv-breed-modal input::placeholder,
+                .pv-breed-modal textarea::placeholder {
+                  color: #64748B !important;
+                  opacity: 1 !important;
+                }
+                .pv-breed-modal .btn.secondary {
+                  color: #1e293b !important;
+                  background-color: #f1f5f9 !important;
+                  border: 1px solid #cbd5e1 !important;
+                }
+                .pv-breed-modal .btn.secondary:hover {
+                  background-color: #e2e8f0 !important;
+                }
+              `}</style>
               <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2>{editingBreed.viewMode ? 'View Breed' : 'Edit Breed'}</h2>
+                <h2 style={{ color: '#172033', margin: 0 }}>{editingBreed.viewMode ? 'View Breed' : 'Edit Breed'}</h2>
                 <button 
                   className="btn secondary" 
                   onClick={() => setEditingBreed(null)}
+                  style={{ color: '#1e293b', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1' }}
                 >
                   Close
                 </button>
@@ -670,45 +873,60 @@ export default function AdminBreeds() {
 
                 <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="stack">
-                    <label>Breed Name</label>
+                    <label style={{ color: '#172033' }}>Breed Name</label>
                     <input 
                       className="input" 
                       value={editingBreed.name} 
                       onChange={e => setEditingBreed(prev => ({ ...prev, name: e.target.value }))}
                       disabled={editingBreed.viewMode}
                       readOnly={editingBreed.viewMode}
-                      style={editingBreed.viewMode ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                      style={{
+                        color: '#172033',
+                        backgroundColor: editingBreed.viewMode ? '#F8FAFC' : '#ffffff',
+                        border: '1px solid #CBD5E1',
+                        cursor: editingBreed.viewMode ? 'not-allowed' : 'text'
+                      }}
                     />
                   </div>
                   <div className="stack">
-                    <label>Origin</label>
+                    <label style={{ color: '#172033' }}>Origin</label>
                     <input 
                       className="input" 
                       value={editingBreed.origin || ''} 
                       onChange={e => setEditingBreed(prev => ({ ...prev, origin: e.target.value }))}
                       disabled={editingBreed.viewMode}
                       readOnly={editingBreed.viewMode}
-                      style={editingBreed.viewMode ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                      style={{
+                        color: '#172033',
+                        backgroundColor: editingBreed.viewMode ? '#F8FAFC' : '#ffffff',
+                        border: '1px solid #CBD5E1',
+                        cursor: editingBreed.viewMode ? 'not-allowed' : 'text'
+                      }}
                     />
                   </div>
                   <div className="stack">
-                    <label>Species *</label>
+                    <label style={{ color: '#172033' }}>Species *</label>
                     <select 
                       className="input" 
                       value={editingBreed.species || 'cattle'} 
                       onChange={e => setEditingBreed(prev => ({ ...prev, species: e.target.value }))}
                       disabled={editingBreed.viewMode}
-                      style={editingBreed.viewMode ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                      style={{
+                        color: '#172033',
+                        backgroundColor: editingBreed.viewMode ? '#F8FAFC' : '#ffffff',
+                        border: '1px solid #CBD5E1',
+                        cursor: editingBreed.viewMode ? 'not-allowed' : 'pointer'
+                      }}
                     >
-                      <option value="cattle">Cattle</option>
-                      <option value="buffalo">Buffalo</option>
-                      <option value="cattle_or_buffalo">Cattle or Buffalo</option>
+                      <option value="cattle" style={{ color: '#172033', backgroundColor: '#ffffff' }}>Cattle</option>
+                      <option value="buffalo" style={{ color: '#172033', backgroundColor: '#ffffff' }}>Buffalo</option>
+                      <option value="cattle_or_buffalo" style={{ color: '#172033', backgroundColor: '#ffffff' }}>Cattle or Buffalo</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="stack">
-                  <label>Description</label>
+                  <label style={{ color: '#172033' }}>Description</label>
                   <textarea 
                     className="textarea" 
                     value={editingBreed.description || ''} 
@@ -716,12 +934,17 @@ export default function AdminBreeds() {
                     rows={3}
                     disabled={editingBreed.viewMode}
                     readOnly={editingBreed.viewMode}
-                    style={editingBreed.viewMode ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                    style={{
+                      color: '#172033',
+                      backgroundColor: editingBreed.viewMode ? '#F8FAFC' : '#ffffff',
+                      border: '1px solid #CBD5E1',
+                      cursor: editingBreed.viewMode ? 'not-allowed' : 'text'
+                    }}
                   />
                 </div>
 
                 <div className="stack">
-                  <label>Avg Weight (kg)</label>
+                  <label style={{ color: '#172033' }}>Avg Weight (kg)</label>
                   <input 
                     className="input" 
                     type="number" 
@@ -729,12 +952,17 @@ export default function AdminBreeds() {
                     onChange={e => setEditingBreed(prev => ({ ...prev, avgWeight: e.target.value }))}
                     disabled={editingBreed.viewMode}
                     readOnly={editingBreed.viewMode}
-                    style={editingBreed.viewMode ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                    style={{
+                      color: '#172033',
+                      backgroundColor: editingBreed.viewMode ? '#F8FAFC' : '#ffffff',
+                      border: '1px solid #CBD5E1',
+                      cursor: editingBreed.viewMode ? 'not-allowed' : 'text'
+                    }}
                   />
                 </div>
 
                 <div className="stack">
-                  <label>Traits (comma-separated)</label>
+                  <label style={{ color: '#172033' }}>Traits (comma-separated)</label>
                   <input 
                     className="input" 
                     value={(editingBreed.traits || []).join(', ')} 
@@ -744,24 +972,30 @@ export default function AdminBreeds() {
                     }))}
                     disabled={editingBreed.viewMode}
                     readOnly={editingBreed.viewMode}
-                    style={editingBreed.viewMode ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                    style={{
+                      color: '#172033',
+                      backgroundColor: editingBreed.viewMode ? '#F8FAFC' : '#ffffff',
+                      border: '1px solid #CBD5E1',
+                      cursor: editingBreed.viewMode ? 'not-allowed' : 'text'
+                    }}
                   />
                 </div>
 
                 <div className="stack">
-                  <label>
+                  <label style={{ color: '#172033' }}>
                     <input 
                       type="checkbox" 
                       checked={editingBreed.isRareBreed || false}
                       onChange={e => setEditingBreed(prev => ({ ...prev, isRareBreed: e.target.checked }))}
                       disabled={editingBreed.viewMode}
+                      style={{ accentColor: '#11a36a' }}
                     />
-                    Mark as rare breed
+                    {' '}Mark as rare breed
                   </label>
                 </div>
 
                 <div className="stack">
-                  <label>Additional Notes (Admin Only)</label>
+                  <label style={{ color: '#172033' }}>Additional Notes (Admin Only)</label>
                   <textarea 
                     className="textarea" 
                     value={editingBreed.notes || ''} 
@@ -770,7 +1004,12 @@ export default function AdminBreeds() {
                     placeholder="Add any additional notes, observations, or special information about this breed..."
                     disabled={editingBreed.viewMode}
                     readOnly={editingBreed.viewMode}
-                    style={editingBreed.viewMode ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
+                    style={{
+                      color: '#172033',
+                      backgroundColor: editingBreed.viewMode ? '#F8FAFC' : '#ffffff',
+                      border: '1px solid #CBD5E1',
+                      cursor: editingBreed.viewMode ? 'not-allowed' : 'text'
+                    }}
                   />
                 </div>
 
@@ -779,6 +1018,7 @@ export default function AdminBreeds() {
                     <button 
                       className="btn secondary" 
                       onClick={() => setEditingBreed(null)}
+                      style={{ color: '#1e293b', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1' }}
                     >
                       Close
                     </button>
@@ -794,6 +1034,7 @@ export default function AdminBreeds() {
                     <button 
                       className="btn secondary" 
                       onClick={() => setEditingBreed(null)}
+                      style={{ color: '#1e293b', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1' }}
                     >
                       Cancel
                     </button>

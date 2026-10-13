@@ -1,5 +1,22 @@
 [
   {
+    "id": "p89sRoJ-SKvANjCWs2yFg",
+    "name": "Gir",
+    "origin": null,
+    "description": "AI-detected breed from model prediction. Breed confidence: 0.0%",
+    "avg_milk_yield": null,
+    "avg_weight": null,
+    "characteristics": [
+      "Model Prediction: 0.0% confidence",
+      "AI-detected from model"
+    ],
+    "species": null,
+    "image_url": null,
+    "notes": "Auto-detected from model prediction on 19/9/2026, 10:50:02 am. Breed: Gir (0.0% confidence). All information derived directly from AI model prediction - no database lookups, no defaults, no inference used.",
+    "created_at": "2026-09-19T05:20:02.753Z",
+    "updated_at": "2026-09-19T05:20:02.753Z"
+  },
+  {
     "id": "XuWU2_gleTPD3tu02Nsyg",
     "name": "Jaffrabadi",
     "species": "cattle",

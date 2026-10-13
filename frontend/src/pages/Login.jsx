@@ -3,8 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import Footer from '../components/Footer.jsx'
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@example.com')
-  const [password, setPassword] = useState('admin123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [otpMode, setOtpMode] = useState(false)
   const [biometricMode, setBiometricMode] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
@@ -144,6 +144,18 @@ export default function Login() {
           border: '1px solid var(--glass-border)',
           boxShadow: 'var(--shadow-lg)'
         }}>
+          {/* Back to Home Navigation */}
+          <div className="back-to-home-nav">
+            <Link 
+              to="/" 
+              className="back-to-home-link"
+              aria-label="Back to Home"
+            >
+              <span className="back-arrow" aria-hidden="true">←</span>
+              <span>Back to Home</span>
+            </Link>
+          </div>
+
           {/* Header */}
           <div style={{
             textAlign: 'center',
@@ -166,24 +178,25 @@ export default function Login() {
               P
             </div>
             <h1 style={{
-              fontSize: '2.5rem',
+              fontSize: '1.8rem',
               fontWeight: 'bold',
-              marginBottom: 'var(--spacing-sm)',
-              fontFamily: 'Times New Roman, serif',
-              color: 'var(--color-text-primary)'
+              color: 'var(--color-primary-green)',
+              margin: '0 0 var(--spacing-xs) 0',
+              fontFamily: 'Times New Roman, serif'
             }}>
               PashuVision
             </h1>
             <p style={{
               color: 'var(--color-text-secondary)',
               fontSize: '1rem',
-              margin: 0
+              margin: 0,
+              fontFamily: 'Times New Roman, serif'
             }}>
-              Welcome back! Please sign in to your account
+              Digital Livestock Management System
             </p>
           </div>
 
-          {/* Login Form */}
+          {/* Regular Login Form */}
           {!otpMode && !biometricMode && (
             <form onSubmit={onSubmit} style={{
               display: 'flex',
@@ -191,18 +204,24 @@ export default function Login() {
               gap: 'var(--spacing-md)'
             }}>
               <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: 'var(--spacing-xs)',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: 'Times New Roman, serif'
-                }}>
+                <label 
+                  htmlFor="email"
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--spacing-xs)',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'Times New Roman, serif'
+                  }}
+                >
                   Email Address
                 </label>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
+                  autoComplete="username"
                   className="input"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -215,21 +234,27 @@ export default function Login() {
                     fontFamily: 'Times New Roman, serif'
                   }}
                 />
-            </div>
+              </div>
 
               <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: 'var(--spacing-xs)',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: 'Times New Roman, serif'
-                }}>
+                <label 
+                  htmlFor="password"
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--spacing-xs)',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'Times New Roman, serif'
+                  }}
+                >
                   Password
                 </label>
                 <input
+                  id="password"
+                  name="password"
                   type="password"
+                  autoComplete="current-password"
                   className="input"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -242,7 +267,7 @@ export default function Login() {
                     fontFamily: 'Times New Roman, serif'
                   }}
                 />
-            </div>
+              </div>
 
               {error && (
                 <div style={{
@@ -254,7 +279,7 @@ export default function Login() {
                   border: '1px solid #ffcdd2'
                 }}>
                   {error}
-            </div>
+                </div>
               )}
 
               <button

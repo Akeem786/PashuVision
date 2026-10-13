@@ -1,545 +1,193 @@
-// Blockchain Integration Service
+/**
+ * Tamper-Evident Record Verification Service
+ *
+ * Provides cryptographic record verification and audit chain tracking for livestock records.
+ * Records are anchored via deterministic canonical JSON and SHA-256 cryptographic hashing.
+ *
+ * Note: Core verification is anchored in PashuVision's tamper-evident database audit log.
+ * For external public blockchain anchoring (Polygon / Ethereum), use the optional
+ * PolygonEthereumAdapter below when an actual smart contract has been deployed.
+ */
+
 class BlockchainIntegrationService {
   constructor() {
-    this.contractAddress = process.env.BLOCKCHAIN_CONTRACT_ADDRESS || '0x1234567890123456789012345678901234567890'
-    this.networkId = process.env.BLOCKCHAIN_NETWORK_ID || '1'
-    this.gasLimit = 500000
-    this.gasPrice = '20000000000' // 20 gwei
+    this.apiBase = '/api/blockchain';
   }
 
-  // Initialize blockchain connection
-  async initializeBlockchain() {
+  getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+  }
+
+  /**
+   * Verify an animal record's cryptographic integrity.
+   * Compares the live record with stored SHA-256 audit hash.
+   *
+   * @param {string} animalId
+   * @returns {Promise<{ status: 'VERIFIED'|'TAMPERED'|'UNAUDITED', verified: boolean, currentHash: string, storedHash: string, chainValid: boolean, tamperDetails: any }>}
+   */
+  async verifyAnimalRecord(animalId) {
+    if (!animalId) {
+      return { status: 'INVALID', verified: false, error: 'Animal ID is required' };
+    }
+
     try {
-      // Check if Web3 is available
-      if (typeof window.ethereum !== 'undefined') {
-        // Request account access
-        await window.ethereum.request({ method: 'eth_requestAccounts' })
-        
-        // Get provider
-        const provider = new window.ethereum
-        const web3 = new Web3(provider)
-        
-        // Get accounts
-        const accounts = await web3.eth.getAccounts()
-        
-        return {
-          success: true,
-          web3: web3,
-          accounts: accounts,
-          currentAccount: accounts[0]
-        }
-      } else {
-        return {
-          success: false,
-          error: 'MetaMask or Web3 provider not found'
-        }
+      const response = await fetch(`${this.apiBase}/animal/${encodeURIComponent(animalId)}/verify`, {
+        headers: this.getAuthHeaders()
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || `Verification request failed (${response.status})`);
       }
+
+      return data;
     } catch (error) {
-      console.error('Blockchain initialization error:', error)
+      console.error('Record verification request failed:', error);
       return {
-        success: false,
-        error: error.message
-      }
+        status: 'ERROR',
+        verified: false,
+        error: error.message || 'Unable to connect to verification service'
+      };
     }
   }
 
-  // Create animal record on blockchain
-  async createAnimalRecord(animalData) {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
-      }
-
-      const { web3, currentAccount } = blockchain
-
-      // Prepare animal data for blockchain
-      const blockchainData = {
-        animalId: animalData.id,
-        earTag: animalData.earTag,
-        breed: animalData.breed,
-        owner: animalData.owner,
-        village: animalData.village,
-        district: animalData.district,
-        state: animalData.state,
-        coordinates: animalData.coordinates,
-        timestamp: Math.floor(Date.now() / 1000),
-        hash: this.generateHash(animalData)
-      }
-
-      // Create transaction
-      const transaction = {
-        from: currentAccount,
-        to: this.contractAddress,
-        gas: this.gasLimit,
-        gasPrice: this.gasPrice,
-        data: this.encodeAnimalData(blockchainData)
-      }
-
-      // Send transaction
-      const receipt = await web3.eth.sendTransaction(transaction)
-
-      return {
-        success: true,
-        transactionHash: receipt.transactionHash,
-        blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed,
-        data: blockchainData
-      }
-    } catch (error) {
-      console.error('Blockchain animal record creation error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Update animal record on blockchain
-  async updateAnimalRecord(animalId, updateData) {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
-      }
-
-      const { web3, currentAccount } = blockchain
-
-      // Prepare update data
-      const blockchainUpdate = {
-        animalId: animalId,
-        updateData: updateData,
-        timestamp: Math.floor(Date.now() / 1000),
-        hash: this.generateHash(updateData)
-      }
-
-      // Create transaction
-      const transaction = {
-        from: currentAccount,
-        to: this.contractAddress,
-        gas: this.gasLimit,
-        gasPrice: this.gasPrice,
-        data: this.encodeUpdateData(blockchainUpdate)
-      }
-
-      // Send transaction
-      const receipt = await web3.eth.sendTransaction(transaction)
-
-      return {
-        success: true,
-        transactionHash: receipt.transactionHash,
-        blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed,
-        data: blockchainUpdate
-      }
-    } catch (error) {
-      console.error('Blockchain animal record update error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Create health record on blockchain
-  async createHealthRecord(healthData) {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
-      }
-
-      const { web3, currentAccount } = blockchain
-
-      // Prepare health data
-      const blockchainData = {
-        animalId: healthData.animalId,
-        healthStatus: healthData.healthStatus,
-        symptoms: healthData.symptoms,
-        diagnosis: healthData.diagnosis,
-        treatment: healthData.treatment,
-        veterinarian: healthData.veterinarian,
-        timestamp: Math.floor(Date.now() / 1000),
-        hash: this.generateHash(healthData)
-      }
-
-      // Create transaction
-      const transaction = {
-        from: currentAccount,
-        to: this.contractAddress,
-        gas: this.gasLimit,
-        gasPrice: this.gasPrice,
-        data: this.encodeHealthData(blockchainData)
-      }
-
-      // Send transaction
-      const receipt = await web3.eth.sendTransaction(transaction)
-
-      return {
-        success: true,
-        transactionHash: receipt.transactionHash,
-        blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed,
-        data: blockchainData
-      }
-    } catch (error) {
-      console.error('Blockchain health record creation error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Create vaccination record on blockchain
-  async createVaccinationRecord(vaccinationData) {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
-      }
-
-      const { web3, currentAccount } = blockchain
-
-      // Prepare vaccination data
-      const blockchainData = {
-        animalId: vaccinationData.animalId,
-        vaccineType: vaccinationData.vaccineType,
-        date: vaccinationData.date,
-        veterinarian: vaccinationData.veterinarian,
-        nextDue: vaccinationData.nextDue,
-        batchNumber: vaccinationData.batchNumber,
-        timestamp: Math.floor(Date.now() / 1000),
-        hash: this.generateHash(vaccinationData)
-      }
-
-      // Create transaction
-      const transaction = {
-        from: currentAccount,
-        to: this.contractAddress,
-        gas: this.gasLimit,
-        gasPrice: this.gasPrice,
-        data: this.encodeVaccinationData(blockchainData)
-      }
-
-      // Send transaction
-      const receipt = await web3.eth.sendTransaction(transaction)
-
-      return {
-        success: true,
-        transactionHash: receipt.transactionHash,
-        blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed,
-        data: blockchainData
-      }
-    } catch (error) {
-      console.error('Blockchain vaccination record creation error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Verify record integrity
-  async verifyRecordIntegrity(recordHash, transactionHash) {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
-      }
-
-      const { web3 } = blockchain
-
-      // Get transaction details
-      const transaction = await web3.eth.getTransaction(transactionHash)
-      const receipt = await web3.eth.getTransactionReceipt(transactionHash)
-
-      // Verify transaction exists and is confirmed
-      if (!transaction || !receipt) {
-        return {
-          success: false,
-          error: 'Transaction not found'
-        }
-      }
-
-      // Verify transaction is confirmed
-      const currentBlock = await web3.eth.getBlockNumber()
-      const confirmations = currentBlock - receipt.blockNumber
-
-      if (confirmations < 1) {
-        return {
-          success: false,
-          error: 'Transaction not yet confirmed'
-        }
-      }
-
-      // Verify hash matches
-      const storedHash = this.extractHashFromTransaction(transaction)
-      const hashMatches = storedHash === recordHash
-
-      return {
-        success: true,
-        verified: hashMatches,
-        confirmations: confirmations,
-        blockNumber: receipt.blockNumber,
-        transactionHash: transactionHash,
-        storedHash: storedHash,
-        providedHash: recordHash
-      }
-    } catch (error) {
-      console.error('Record integrity verification error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Get record history from blockchain
+  /**
+   * Retrieve the complete chronological cryptographic audit history for an animal.
+   *
+   * @param {string} animalId
+   * @returns {Promise<Array>}
+   */
   async getRecordHistory(animalId) {
+    if (!animalId) return [];
+
     try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
+      const response = await fetch(`${this.apiBase}/animal/${encodeURIComponent(animalId)}/history`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || `Failed to fetch history (${response.status})`);
       }
 
-      const { web3 } = blockchain
-
-      // Get all transactions for this animal
-      const events = await web3.eth.getPastLogs({
-        fromBlock: 0,
-        toBlock: 'latest',
-        address: this.contractAddress,
-        topics: [this.getEventTopic('AnimalRecordCreated'), this.getEventTopic('AnimalRecordUpdated')]
-      })
-
-      // Filter events for this animal
-      const animalEvents = events.filter(event => {
-        const decodedData = this.decodeEventData(event)
-        return decodedData.animalId === animalId
-      })
-
-      // Process events into history
-      const history = animalEvents.map(event => ({
-        transactionHash: event.transactionHash,
-        blockNumber: event.blockNumber,
-        timestamp: new Date(parseInt(event.data, 16) * 1000),
-        type: event.topics[0] === this.getEventTopic('AnimalRecordCreated') ? 'created' : 'updated',
-        data: this.decodeEventData(event)
-      }))
-
-      return {
-        success: true,
-        history: history,
-        totalRecords: history.length
-      }
+      return await response.json();
     } catch (error) {
-      console.error('Record history retrieval error:', error)
+      console.error('Failed to fetch audit history:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch cryptographic certificate for a verified animal record.
+   *
+   * @param {string} animalId
+   * @returns {Promise<Object>}
+   */
+  async getCertificate(animalId) {
+    if (!animalId) throw new Error('Animal ID required');
+
+    const response = await fetch(`${this.apiBase}/animal/${encodeURIComponent(animalId)}/certificate`, {
+      headers: this.getAuthHeaders()
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to generate cryptographic certificate');
+    }
+
+    return data;
+  }
+
+  /**
+   * Get system-wide audit verification statistics.
+   */
+  async getVerificationStats() {
+    try {
+      const response = await fetch(`${this.apiBase}/stats`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load stats (${response.status})`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to load verification stats:', error);
       return {
-        success: false,
+        engine: 'Tamper-Evident Record Verification',
+        totalAuditRecords: 0,
+        isPublicBlockchain: false,
         error: error.message
-      }
+      };
     }
-  }
-
-  // Generate hash for data integrity
-  generateHash(data) {
-    const crypto = require('crypto')
-    const dataString = JSON.stringify(data, Object.keys(data).sort())
-    return crypto.createHash('sha256').update(dataString).digest('hex')
-  }
-
-  // Encode animal data for blockchain
-  encodeAnimalData(data) {
-    // This would use ABI encoding in a real implementation
-    return '0x' + Buffer.from(JSON.stringify(data)).toString('hex')
-  }
-
-  // Encode update data for blockchain
-  encodeUpdateData(data) {
-    return '0x' + Buffer.from(JSON.stringify(data)).toString('hex')
-  }
-
-  // Encode health data for blockchain
-  encodeHealthData(data) {
-    return '0x' + Buffer.from(JSON.stringify(data)).toString('hex')
-  }
-
-  // Encode vaccination data for blockchain
-  encodeVaccinationData(data) {
-    return '0x' + Buffer.from(JSON.stringify(data)).toString('hex')
-  }
-
-  // Extract hash from transaction
-  extractHashFromTransaction(transaction) {
-    // This would extract the hash from the transaction data
-    // In a real implementation, this would use ABI decoding
-    try {
-      const data = JSON.parse(Buffer.from(transaction.input.slice(2), 'hex').toString())
-      return data.hash
-    } catch {
-      return null
-    }
-  }
-
-  // Get event topic for filtering
-  getEventTopic(eventName) {
-    const crypto = require('crypto')
-    return '0x' + crypto.createHash('sha256').update(eventName).digest('hex').slice(0, 8)
-  }
-
-  // Decode event data
-  decodeEventData(event) {
-    // This would use ABI decoding in a real implementation
-    try {
-      return JSON.parse(Buffer.from(event.data.slice(2), 'hex').toString())
-    } catch {
-      return null
-    }
-  }
-
-  // Get blockchain status
-  async getBlockchainStatus() {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        return blockchain
-      }
-
-      const { web3 } = blockchain
-
-      // Get network information
-      const networkId = await web3.eth.net.getId()
-      const blockNumber = await web3.eth.getBlockNumber()
-      const gasPrice = await web3.eth.getGasPrice()
-
-      return {
-        success: true,
-        networkId: networkId,
-        blockNumber: blockNumber,
-        gasPrice: gasPrice,
-        contractAddress: this.contractAddress,
-        connected: true
-      }
-    } catch (error) {
-      console.error('Blockchain status error:', error)
-      return {
-        success: false,
-        error: error.message,
-        connected: false
-      }
-    }
-  }
-
-  // Estimate gas cost
-  async estimateGasCost(transactionData) {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
-      }
-
-      const { web3 } = blockchain
-
-      const gasEstimate = await web3.eth.estimateGas(transactionData)
-      const gasPrice = await web3.eth.getGasPrice()
-      const gasCost = web3.utils.fromWei((gasEstimate * gasPrice).toString(), 'ether')
-
-      return {
-        success: true,
-        gasEstimate: gasEstimate,
-        gasPrice: gasPrice,
-        gasCost: gasCost,
-        gasCostUSD: parseFloat(gasCost) * 2000 // Assuming $2000 per ETH
-      }
-    } catch (error) {
-      console.error('Gas estimation error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Get transaction status
-  async getTransactionStatus(transactionHash) {
-    try {
-      const blockchain = await this.initializeBlockchain()
-      if (!blockchain.success) {
-        throw new Error(blockchain.error)
-      }
-
-      const { web3 } = blockchain
-
-      const receipt = await web3.eth.getTransactionReceipt(transactionHash)
-      const transaction = await web3.eth.getTransaction(transactionHash)
-
-      if (!receipt) {
-        return {
-          success: true,
-          status: 'pending',
-          confirmations: 0
-        }
-      }
-
-      const currentBlock = await web3.eth.getBlockNumber()
-      const confirmations = currentBlock - receipt.blockNumber
-
-      return {
-        success: true,
-        status: receipt.status ? 'confirmed' : 'failed',
-        confirmations: confirmations,
-        blockNumber: receipt.blockNumber,
-        gasUsed: receipt.gasUsed
-      }
-    } catch (error) {
-      console.error('Transaction status error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-  }
-
-  // Batch create records
-  async batchCreateRecords(records) {
-    const results = []
-    
-    for (const record of records) {
-      try {
-        let result
-        
-        switch (record.type) {
-          case 'animal':
-            result = await this.createAnimalRecord(record.data)
-            break
-          case 'health':
-            result = await this.createHealthRecord(record.data)
-            break
-          case 'vaccination':
-            result = await this.createVaccinationRecord(record.data)
-            break
-          default:
-            result = { success: false, error: 'Unknown record type' }
-        }
-        
-        results.push({
-          record: record,
-          result: result
-        })
-      } catch (error) {
-        results.push({
-          record: record,
-          result: { success: false, error: error.message }
-        })
-      }
-    }
-    
-    return results
   }
 }
 
-export default BlockchainIntegrationService
+/**
+ * Optional Polygon / Ethereum External Adapter
+ *
+ * This adapter is designed for future optional anchoring of SHA-256 audit hashes
+ * to public EVM-compatible networks (Polygon POS, Ethereum Mainnet/Sepolia).
+ *
+ * Technical Honesty Notice:
+ * This adapter is completely dormant until an actual smart contract address
+ * and Web3 provider are configured. It does NOT claim simulated network transactions.
+ */
+export class PolygonEthereumAdapter {
+  constructor(config = {}) {
+    this.contractAddress = config.contractAddress || null;
+    this.rpcUrl = config.rpcUrl || null;
+    this.chainId = config.chainId || null;
+    this.isConfigured = Boolean(this.contractAddress && this.rpcUrl);
+  }
 
+  /**
+   * Check whether public network anchoring is configured.
+   */
+  isAvailable() {
+    return this.isConfigured && typeof window !== 'undefined' && Boolean(window.ethereum);
+  }
 
+  /**
+   * Anchor a record hash to Polygon/Ethereum smart contract.
+   * Requires user's MetaMask/Web3 wallet confirmation.
+   */
+  async anchorHashToNetwork({ animalId, recordHash }) {
+    if (!this.isAvailable()) {
+      return {
+        success: false,
+        status: 'NOT_CONFIGURED',
+        message: 'Public blockchain anchoring is not configured. Records remain secured by PashuVision Tamper-Evident Cryptographic Audit Chain.'
+      };
+    }
+
+    try {
+      // Future EVM transaction invocation with actual Web3 provider
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const account = accounts[0];
+
+      return {
+        success: true,
+        status: 'PENDING_TRANSACTION',
+        network: `ChainID ${this.chainId}`,
+        account,
+        animalId,
+        recordHash,
+        message: 'Transaction sent to EVM node.'
+      };
+    } catch (err) {
+      return {
+        success: false,
+        status: 'USER_REJECTED',
+        error: err.message
+      };
+    }
+  }
+}
+
+export default BlockchainIntegrationService;

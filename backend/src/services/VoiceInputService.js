@@ -27,11 +27,14 @@ class VoiceInputService {
   initializeSpeechClient() {
     try {
       const speech = getSpeechModule();
-      if (speech) {
+      if (speech && (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CLOUD_PROJECT)) {
         this.speechClient = new speech.SpeechClient();
+      } else {
+        this.speechClient = null;
       }
     } catch (error) {
       console.warn('⚠️  Failed to initialize Google Speech client:', error.message);
+      this.speechClient = null;
     }
   }
 

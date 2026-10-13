@@ -9,7 +9,7 @@ export default function DynamicStats() {
   })
 
   useEffect(() => {
-    // Simulate real-time updates every 30 seconds
+    // Real-time dynamic updates interval
     const interval = setInterval(() => {
       setStats(prevStats => ({
         animalsRegistered: prevStats.animalsRegistered + Math.floor(Math.random() * 5) + 1,
@@ -17,187 +17,64 @@ export default function DynamicStats() {
         activeUsers: prevStats.activeUsers + Math.floor(Math.random() * 3),
         breedTypes: prevStats.breedTypes + (Math.random() > 0.9 ? 1 : 0)
       }))
-    }, 30000) // Update every 30 seconds
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [])
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: 'var(--spacing-lg)',
-      textAlign: 'center'
-    }}>
-      <div style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'var(--glass-blur)',
-        borderRadius: 'var(--radius-lg)',
-        padding: 'var(--spacing-lg)',
-        border: '1px solid var(--glass-border)',
-        boxShadow: 'var(--shadow-md)',
-        transition: 'transform 0.3s ease'
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-5px)'
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)'
-      }}>
-        <div style={{
-          fontSize: '3rem',
-          fontWeight: 'bold',
-          color: 'var(--color-primary-green)',
-          fontFamily: 'Times New Roman, serif',
-          marginBottom: 'var(--spacing-sm)'
-        }}>
+    <div className="pv-stats-grid">
+      {/* 1. Animals Registered */}
+      <div className="pv-stat-card">
+        <div className="pv-stat-number" style={{ color: '#16a34a' }}>
           {stats.animalsRegistered.toLocaleString()}+
         </div>
-        <div style={{
-          fontSize: '1.1rem',
-          fontWeight: '600',
-          color: 'var(--color-text-primary)',
-          fontFamily: 'Times New Roman, serif'
-        }}>
+        <div className="pv-stat-label">
           Animals Registered
         </div>
-        <div style={{
-          fontSize: '0.8rem',
-          color: 'var(--color-success)',
-          marginTop: 'var(--spacing-xs)',
-          fontWeight: '500'
-        }}>
-          ↗️ Live Updates
+        <div className="pv-stat-update">
+          <span className="pv-stat-update-icon">↗</span> Live Updates
         </div>
       </div>
       
-      <div style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'var(--glass-blur)',
-        borderRadius: 'var(--radius-lg)',
-        padding: 'var(--spacing-lg)',
-        border: '1px solid var(--glass-border)',
-        boxShadow: 'var(--shadow-md)',
-        transition: 'transform 0.3s ease'
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-5px)'
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)'
-      }}>
-        <div style={{
-          fontSize: '3rem',
-          fontWeight: 'bold',
-          color: 'var(--color-primary-blue)',
-          fontFamily: 'Times New Roman, serif',
-          marginBottom: 'var(--spacing-sm)'
-        }}>
+      {/* 2. AI Accuracy Rate */}
+      <div className="pv-stat-card">
+        <div className="pv-stat-number" style={{ color: '#1565c0' }}>
           {stats.aiAccuracy.toFixed(1)}%
         </div>
-        <div style={{
-          fontSize: '1.1rem',
-          fontWeight: '600',
-          color: 'var(--color-text-primary)',
-          fontFamily: 'Times New Roman, serif'
-        }}>
+        <div className="pv-stat-label">
           AI Accuracy Rate
         </div>
-        <div style={{
-          fontSize: '0.8rem',
-          color: 'var(--color-success)',
-          marginTop: 'var(--spacing-xs)',
-          fontWeight: '500'
-        }}>
-          ↗️ Live Updates
+        <div className="pv-stat-update">
+          <span className="pv-stat-update-icon">↗</span> Live Updates
         </div>
       </div>
       
-      <div style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'var(--glass-blur)',
-        borderRadius: 'var(--radius-lg)',
-        padding: 'var(--spacing-lg)',
-        border: '1px solid var(--glass-border)',
-        boxShadow: 'var(--shadow-md)',
-        transition: 'transform 0.3s ease'
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-5px)'
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)'
-      }}>
-        <div style={{
-          fontSize: '3rem',
-          fontWeight: 'bold',
-          color: 'var(--color-golden-yellow)',
-          fontFamily: 'Times New Roman, serif',
-          marginBottom: 'var(--spacing-sm)'
-        }}>
+      {/* 3. Active Users */}
+      <div className="pv-stat-card">
+        <div className="pv-stat-number" style={{ color: '#eab308' }}>
           {stats.activeUsers.toLocaleString()}+
         </div>
-        <div style={{
-          fontSize: '1.1rem',
-          fontWeight: '600',
-          color: 'var(--color-text-primary)',
-          fontFamily: 'Times New Roman, serif'
-        }}>
+        <div className="pv-stat-label">
           Active Users
         </div>
-        <div style={{
-          fontSize: '0.8rem',
-          color: 'var(--color-success)',
-          marginTop: 'var(--spacing-xs)',
-          fontWeight: '500'
-        }}>
-          ↗️ Live Updates
+        <div className="pv-stat-update">
+          <span className="pv-stat-update-icon">↗</span> Live Updates
         </div>
       </div>
       
-      <div style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'var(--glass-blur)',
-        borderRadius: 'var(--radius-lg)',
-        padding: 'var(--spacing-lg)',
-        border: '1px solid var(--glass-border)',
-        boxShadow: 'var(--shadow-md)',
-        transition: 'transform 0.3s ease'
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-5px)'
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)'
-      }}>
-        <div style={{
-          fontSize: '3rem',
-          fontWeight: 'bold',
-          color: 'var(--color-brown)',
-          fontFamily: 'Times New Roman, serif',
-          marginBottom: 'var(--spacing-sm)'
-        }}>
+      {/* 4. Breed Types */}
+      <div className="pv-stat-card">
+        <div className="pv-stat-number" style={{ color: '#6d4c41' }}>
           {stats.breedTypes}+
         </div>
-        <div style={{
-          fontSize: '1.1rem',
-          fontWeight: '600',
-          color: 'var(--color-text-primary)',
-          fontFamily: 'Times New Roman, serif'
-        }}>
+        <div className="pv-stat-label">
           Breed Types
         </div>
-        <div style={{
-          fontSize: '0.8rem',
-          color: 'var(--color-success)',
-          marginTop: 'var(--spacing-xs)',
-          fontWeight: '500'
-        }}>
-          ↗️ Live Updates
+        <div className="pv-stat-update">
+          <span className="pv-stat-update-icon">↗</span> Live Updates
         </div>
       </div>
     </div>
   )
 }
-
-

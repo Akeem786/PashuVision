@@ -27,7 +27,16 @@ export default function ForgotPassword() {
         <div className="card" style={{ maxWidth: 520 }}>
           <h1>Forgot Password</h1>
           <div className="stack">
-            <input className="input" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
+            <input 
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              className="input" 
+              value={email} 
+              onChange={e => setEmail(e.target.value)} 
+              placeholder="you@example.com" 
+            />
             <button className="btn" disabled={loading} onClick={send}>{loading ? 'Sending…' : 'Send Reset Link'}</button>
             {sent && <div style={{ color: 'var(--color-muted)' }}>If the email exists, a link was sent. Dev token: {devToken}</div>}
             {error && <div style={{ color: 'salmon' }}>{error}</div>}

@@ -59,18 +59,34 @@ export async function apiRequest(url, options = {}) {
     }
 
     if (!res.ok) {
-      const errorMsg = data.error || data.message || `Request failed (${res.status})`;
+      let errorMsg = data?.error || data?.message;
+      if (!errorMsg) {
+        if (res.status === 401) {
+          errorMsg = 'Your session has expired or you are not logged in. Please sign in again.';
+        } else if (res.status === 403) {
+          errorMsg = 'Access forbidden: You do not have permission to perform this action.';
+        } else if (res.status === 404) {
+          errorMsg = 'The requested resource was not found.';
+        } else if (res.status === 429) {
+          errorMsg = 'Too many requests. Please wait a moment before trying again.';
+        } else if (res.status >= 500) {
+          errorMsg = 'The server encountered an error. Please try again shortly.';
+        } else {
+          errorMsg = `Request failed with status code ${res.status}`;
+        }
+      } else if (typeof errorMsg !== 'string') {
+        errorMsg = JSON.stringify(errorMsg);
+      }
       return { data: null, error: errorMsg };
     }
 
     return { data, error: null };
   } catch (err) {
     console.error('API request error:', err);
-    // Provide more specific error messages
-    let errorMessage = 'Network error. Please check your connection.';
-    if (err.message === 'Failed to fetch') {
-      errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
-    } else if (err.message) {
+    let errorMessage = 'Network error. Please check your internet connection and try again.';
+    if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+      errorMessage = 'Unable to reach the server. Please verify your connection or ensure the server is running.';
+    } else if (typeof err.message === 'string' && err.message) {
       errorMessage = err.message;
     }
     return { 

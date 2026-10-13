@@ -229,7 +229,7 @@ export default function Profile() {
                     }} 
                   />
                 );
-              })() : null}
+              })()}
               <div style={{ 
                 width: isMobile ? 150 : 200, 
                 height: isMobile ? 150 : 200, 

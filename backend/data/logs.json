@@ -1,5 +1,230 @@
 [
   {
+    "id": "iMc3FLpek0UJHqIEuyai4",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-10-13T06:41:26.895Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "_VjdaSvdck40nc90-wJ6o",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-akeem-1856"
+    },
+    "timestamp": "2026-10-13T06:35:12.270Z",
+    "user_id": "admin-akeem-1856"
+  },
+  {
+    "id": "eKi5vuCB3qIUGitpwptRb",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-10-13T06:35:05.281Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "TXYv-EhNKZID51Gmb0URn",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-akeem-1856"
+    },
+    "timestamp": "2026-10-13T06:32:54.267Z",
+    "user_id": "admin-akeem-1856"
+  },
+  {
+    "id": "0BhhMnso3oCGjRYuBVsEK",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-20T17:27:13.269Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "cOO6RFVv0Q17dO21XJCKb",
+    "action": "auth.login",
+    "data": {
+      "userId": "GamMgm2ywBNqfcw2F5PX5"
+    },
+    "timestamp": "2026-09-20T17:25:13.128Z",
+    "user_id": "GamMgm2ywBNqfcw2F5PX5"
+  },
+  {
+    "id": "gVJS1vIBmFC2dd9fMrrn9",
+    "action": "admin.user_created",
+    "data": {
+      "userId": "GamMgm2ywBNqfcw2F5PX5",
+      "createdBy": "admin-example-user"
+    },
+    "timestamp": "2026-09-20T17:24:58.027Z",
+    "user_id": "GamMgm2ywBNqfcw2F5PX5"
+  },
+  {
+    "id": "aQ-pHow-xLFYAGFUYzZ67",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-20T16:50:27.644Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "jCSeHGZjpfJeszDJamAPZ",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-20T15:46:22.231Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "CptmLgnemTYb9r3Hut58s",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-20T15:45:20.623Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "pgiedYjvMT8wLDV10wqU5",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-20T15:44:36.904Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "4FMf7g-ObtXrmtlOTsqia",
+    "action": "auth.login",
+    "data": {
+      "userId": "cNd-qJ2qdh75KJgYBGFA8"
+    },
+    "timestamp": "2026-09-20T09:38:38.573Z",
+    "user_id": "cNd-qJ2qdh75KJgYBGFA8"
+  },
+  {
+    "id": "SRMcLHogyv8ql8NDzB08G",
+    "action": "auth.register",
+    "data": {
+      "userId": "cNd-qJ2qdh75KJgYBGFA8",
+      "role": "user"
+    },
+    "timestamp": "2026-09-20T09:38:38.492Z",
+    "user_id": "cNd-qJ2qdh75KJgYBGFA8"
+  },
+  {
+    "id": "9DEInbNptCrsHivvXRDq_",
+    "action": "auth.login",
+    "data": {
+      "userId": "31BhSTgvN2u6Z2ptTyOlY"
+    },
+    "timestamp": "2026-09-20T08:19:08.331Z",
+    "user_id": "31BhSTgvN2u6Z2ptTyOlY"
+  },
+  {
+    "id": "G3Yf_qKbuG_X7ik5h1BH7",
+    "action": "auth.register",
+    "data": {
+      "userId": "31BhSTgvN2u6Z2ptTyOlY",
+      "role": "user"
+    },
+    "timestamp": "2026-09-20T08:19:08.246Z",
+    "user_id": "31BhSTgvN2u6Z2ptTyOlY"
+  },
+  {
+    "id": "qgw0rawHBm4N3SunaAbPy",
+    "action": "animal.create",
+    "data": {
+      "id": "tml7eBDqPEKXYwko9l4cx",
+      "userId": "user_farmer_alpha"
+    },
+    "timestamp": "2026-09-19T07:19:37.014Z",
+    "user_id": "user_farmer_alpha"
+  },
+  {
+    "id": "XOoQ1pEjJa6gARjTGYXYg",
+    "action": "animal.create",
+    "data": {
+      "id": "vmKZQYC7GXahWM_foRCGk",
+      "userId": "user_farmer_alpha"
+    },
+    "timestamp": "2026-09-19T07:19:37.000Z",
+    "user_id": "user_farmer_alpha"
+  },
+  {
+    "id": "LgXwlYr6MDOgYi6WdE6QO",
+    "action": "animal.approve",
+    "data": {
+      "id": "3rAPptb6ZgkLqQFo1kCg0",
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-19T05:20:02.773Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "Vtm9uB02cKLqRi9zpnHnu",
+    "action": "animal.create",
+    "data": {
+      "id": "3rAPptb6ZgkLqQFo1kCg0",
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-19T05:20:02.755Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "_BFgoh0cz0OMNnQsdN4Jo",
+    "action": "auth.register",
+    "data": {
+      "userId": "hj4RHoMFuuPNa4PM8TNWp",
+      "role": "user"
+    },
+    "timestamp": "2026-09-19T04:14:28.932Z",
+    "user_id": "hj4RHoMFuuPNa4PM8TNWp"
+  },
+  {
+    "id": "ig4xo-hDJJhCmexL8zeX6",
+    "action": "auth.login",
+    "data": {
+      "userId": "hyABU68cisagi1Xr7_F99"
+    },
+    "timestamp": "2026-09-19T04:14:14.728Z",
+    "user_id": "hyABU68cisagi1Xr7_F99"
+  },
+  {
+    "id": "D3j6Gep2jxmRKdVf-CdKB",
+    "action": "auth.register",
+    "data": {
+      "userId": "hyABU68cisagi1Xr7_F99",
+      "role": "user"
+    },
+    "timestamp": "2026-09-19T04:13:56.418Z",
+    "user_id": "hyABU68cisagi1Xr7_F99"
+  },
+  {
+    "id": "QoPiSWnsmGupTy8Tl9-Md",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-18T19:07:05.711Z",
+    "user_id": "admin-example-user"
+  },
+  {
+    "id": "HqjaHZFTyYxkHAQFU2IdE",
+    "action": "auth.login",
+    "data": {
+      "userId": "admin-example-user"
+    },
+    "timestamp": "2026-09-18T19:06:58.021Z",
+    "user_id": "admin-example-user"
+  },
+  {
     "id": "vLVclfyUYDridzSsJL42T",
     "user_id": null,
     "action": "animal.approve",

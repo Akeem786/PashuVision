@@ -173,7 +173,7 @@ export default function ExplainableAIHeatmap() {
       
       // Draw feature label
       ctx.fillStyle = '#FFFFFF'
-      ctx.font = 'bold 14px Arial'
+      ctx.font = 'bold 14px "Times New Roman", Times, serif'
       ctx.textAlign = 'center'
       ctx.strokeStyle = '#000000'
       ctx.lineWidth = 2

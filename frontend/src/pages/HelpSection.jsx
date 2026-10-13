@@ -266,21 +266,68 @@ export default function HelpSection() {
     <>
       <Header />
       <div className="container">
-        <div className="card">
+        <div className="card pv-help-section">
+          <style>{`
+            .pv-help-section {
+              color: #CBD5E1;
+            }
+            .pv-help-section h1,
+            .pv-help-section h2,
+            .pv-help-section h3 {
+              color: #E8F1F8 !important;
+            }
+            .pv-help-section h4,
+            .pv-help-section h5 {
+              color: #FFFFFF !important;
+            }
+            .pv-help-section p {
+              color: #CBD5E1 !important;
+            }
+            .pv-help-section .card {
+              background: linear-gradient(180deg, #132d4b 0%, #0e2338 100%);
+              border: 1px solid rgba(255, 255, 255, 0.12);
+              color: #CBD5E1;
+            }
+            .pv-help-section .faq-container-card {
+              background: linear-gradient(180deg, #0f2740 0%, #0b2238 100%) !important;
+              border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            }
+            .pv-help-section .faq-item-card {
+              background: linear-gradient(180deg, #132d4b 0%, #0e2338 100%) !important;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+            }
+            .pv-help-section .faq-item-card:hover {
+              border-color: rgba(255, 255, 255, 0.22) !important;
+            }
+            .pv-help-section .input {
+              color: #E8F1F8 !important;
+              background-color: #0e2238 !important;
+              border: 1px solid rgba(255, 255, 255, 0.22) !important;
+            }
+            .pv-help-section .input::placeholder {
+              color: #94A3B8 !important;
+              opacity: 1 !important;
+            }
+            .pv-help-section .search-card {
+              background: linear-gradient(180deg, #132d4b 0%, #0e2338 100%) !important;
+              border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            }
+          `}</style>
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1>❓ Help & Support</h1>
+            <h1 style={{ color: '#E8F1F8' }}>❓ Help & Support</h1>
             <div className="row" style={{ gap: 8 }}>
-              <button 
+              <a 
+                href="mailto:akeemchoudhary0786@gmail.com"
                 className="btn" 
-                onClick={() => window.open('mailto:support@breedai.com')}
+                style={{ backgroundColor: '#15803D', color: '#FFFFFF', border: 'none', textDecoration: 'none' }}
               >
                 📧 Contact Support
-              </button>
+              </a>
             </div>
           </div>
 
           {/* Search Bar */}
-          <div className="card" style={{ marginTop: 16 }}>
+          <div className="card search-card" style={{ marginTop: 16, background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
             <div className="row" style={{ alignItems: 'center', gap: 12 }}>
               <input
                 className="input"
@@ -288,35 +335,80 @@ export default function HelpSection() {
                 placeholder="Search help articles, FAQs, or tutorials..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, backgroundColor: '#0e2238', color: '#E8F1F8', border: '1px solid rgba(255, 255, 255, 0.22)' }}
               />
-              <button className="btn secondary">🔍 Search</button>
+              <button 
+                className="btn secondary"
+                style={{ backgroundColor: '#1565C0', color: '#FFFFFF', border: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                🔍 Search
+              </button>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="row" style={{ marginTop: 16, gap: 8 }}>
+          <div className="row" style={{ marginTop: 16, gap: 8, flexWrap: 'wrap' }}>
             <button 
               className={`btn ${activeTab === 'faq' ? '' : 'secondary'}`}
               onClick={() => setActiveTab('faq')}
+              style={activeTab === 'faq' ? {
+                backgroundColor: '#15803D',
+                color: '#FFFFFF',
+                border: 'none',
+                boxShadow: '0 2px 6px rgba(21, 128, 61, 0.4)'
+              } : {
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#CBD5E1',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
             >
               📋 FAQs
             </button>
             <button 
               className={`btn ${activeTab === 'tutorials' ? '' : 'secondary'}`}
               onClick={() => setActiveTab('tutorials')}
+              style={activeTab === 'tutorials' ? {
+                backgroundColor: '#15803D',
+                color: '#FFFFFF',
+                border: 'none',
+                boxShadow: '0 2px 6px rgba(21, 128, 61, 0.4)'
+              } : {
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#CBD5E1',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
             >
               📚 Tutorials
             </button>
             <button 
               className={`btn ${activeTab === 'videos' ? '' : 'secondary'}`}
               onClick={() => setActiveTab('videos')}
+              style={activeTab === 'videos' ? {
+                backgroundColor: '#15803D',
+                color: '#FFFFFF',
+                border: 'none',
+                boxShadow: '0 2px 6px rgba(21, 128, 61, 0.4)'
+              } : {
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#CBD5E1',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
             >
               🎥 Video Guides
             </button>
             <button 
               className={`btn ${activeTab === 'contact' ? '' : 'secondary'}`}
               onClick={() => setActiveTab('contact')}
+              style={activeTab === 'contact' ? {
+                backgroundColor: '#15803D',
+                color: '#FFFFFF',
+                border: 'none',
+                boxShadow: '0 2px 6px rgba(21, 128, 61, 0.4)'
+              } : {
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#CBD5E1',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
             >
               📞 Contact
             </button>
@@ -324,14 +416,19 @@ export default function HelpSection() {
 
           {/* FAQ Section */}
           {activeTab === 'faq' && (
-            <div className="card" style={{ marginTop: 16 }}>
-              <h2>Frequently Asked Questions</h2>
+            <div className="card faq-container-card" style={{ marginTop: 16 }}>
+              <h2 style={{ color: '#E8F1F8' }}>Frequently Asked Questions</h2>
               
               {/* Category Filter */}
               <div className="row" style={{ gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
                 <button 
                   className="btn secondary"
                   onClick={() => setSearchQuery('')}
+                  style={{
+                    backgroundColor: searchQuery === '' ? '#1565C0' : 'rgba(255, 255, 255, 0.08)',
+                    color: searchQuery === '' ? '#FFFFFF' : '#CBD5E1',
+                    border: searchQuery === '' ? 'none' : '1px solid rgba(255, 255, 255, 0.2)'
+                  }}
                 >
                   All Categories
                 </button>
@@ -340,6 +437,11 @@ export default function HelpSection() {
                     key={category}
                     className="btn secondary"
                     onClick={() => setSearchQuery(category)}
+                    style={{
+                      backgroundColor: searchQuery === category ? '#1565C0' : 'rgba(255, 255, 255, 0.08)',
+                      color: searchQuery === category ? '#FFFFFF' : '#CBD5E1',
+                      border: searchQuery === category ? 'none' : '1px solid rgba(255, 255, 255, 0.2)'
+                    }}
                   >
                     {category}
                   </button>
@@ -349,29 +451,42 @@ export default function HelpSection() {
               {/* FAQ List */}
               <div className="stack" style={{ gap: 12 }}>
                 {filteredFAQs.map(faq => (
-                  <div key={faq.id} className="card" style={{ 
-                    border: expandedFAQ === faq.id ? '2px solid var(--color-primary-green)' : '1px solid #e0e0e0',
+                  <div key={faq.id} className="card faq-item-card" style={{ 
+                    background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)',
+                    border: expandedFAQ === faq.id ? '2px solid #11a36a' : '1px solid rgba(255, 255, 255, 0.12)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
                     cursor: 'pointer'
                   }}
                   onClick={() => setExpandedFAQ(expandedFAQ === faq.id ? null : faq.id)}>
                     <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <div style={{ fontSize: '12px', color: 'var(--color-primary-blue)', fontWeight: '600' }}>
+                        <div style={{ fontSize: '12px', color: '#38BDF8', fontWeight: '600' }}>
                           {faq.category}
                         </div>
-                        <h4 style={{ margin: '4px 0' }}>{faq.question}</h4>
+                        <h4 style={{ margin: '4px 0', color: '#FFFFFF' }}>{faq.question}</h4>
                       </div>
-                      <div style={{ fontSize: '24px', color: 'var(--color-text-muted)' }}>
+                      <div style={{ fontSize: '24px', color: '#38BDF8', fontWeight: 'bold' }}>
                         {expandedFAQ === faq.id ? '−' : '+'}
                       </div>
                     </div>
                     
                     {expandedFAQ === faq.id && (
-                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #e0e0e0' }}>
-                        <p style={{ marginBottom: 12 }}>{faq.answer}</p>
+                      <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255, 255, 255, 0.12)' }}>
+                        <p style={{ marginBottom: 12, color: '#CBD5E1', lineHeight: '1.6' }}>{faq.answer}</p>
                         <div className="row" style={{ gap: 4, flexWrap: 'wrap' }}>
                           {faq.tags.map(tag => (
-                            <span key={tag} className="badge" style={{ fontSize: '10px' }}>
+                            <span 
+                              key={tag} 
+                              className="badge" 
+                              style={{ 
+                                fontSize: '10px',
+                                backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                                color: '#7DD3FC',
+                                border: '1px solid rgba(56, 189, 248, 0.3)',
+                                padding: '2px 8px',
+                                borderRadius: '4px'
+                              }}
+                            >
                               #{tag}
                             </span>
                           ))}
@@ -396,22 +511,23 @@ export default function HelpSection() {
                     <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <h4>{tutorial.title}</h4>
                       <div className="badge" style={{ 
-                        backgroundColor: tutorial.difficulty === 'Beginner' ? '#4CAF50' : 
-                                        tutorial.difficulty === 'Intermediate' ? '#FF9800' : '#F44336'
+                        backgroundColor: tutorial.difficulty === 'Beginner' ? '#15803D' : 
+                                        tutorial.difficulty === 'Intermediate' ? '#D97706' : '#DC2626',
+                        color: '#FFFFFF'
                       }}>
                         {tutorial.difficulty}
                       </div>
                     </div>
                     
-                    <p style={{ color: 'var(--color-text-muted)', margin: '8px 0' }}>
+                    <p style={{ color: '#CBD5E1', margin: '8px 0' }}>
                       {tutorial.description}
                     </p>
                     
                     <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                      <span style={{ fontSize: '12px', color: '#94A3B8' }}>
                         ⏱️ {tutorial.duration}
                       </span>
-                      <button className="btn outline" style={{ fontSize: '12px' }}>
+                      <button className="btn outline" style={{ fontSize: '12px', color: '#38BDF8', borderColor: 'rgba(56, 189, 248, 0.4)' }}>
                         Start Tutorial →
                       </button>
                     </div>
@@ -427,7 +543,7 @@ export default function HelpSection() {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  backgroundColor: 'rgba(0,0,0,0.6)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -437,31 +553,34 @@ export default function HelpSection() {
                     maxWidth: '600px', 
                     maxHeight: '80vh', 
                     overflow: 'auto',
-                    margin: '20px'
+                    margin: '20px',
+                    backgroundColor: '#0f2740',
+                    border: '1px solid rgba(255, 255, 255, 0.15)'
                   }}>
                     <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3>{selectedTutorial.title}</h3>
+                      <h3 style={{ color: '#E8F1F8' }}>{selectedTutorial.title}</h3>
                       <button 
                         className="btn secondary"
                         onClick={() => setSelectedTutorial(null)}
+                        style={{ color: '#E8F1F8', borderColor: 'rgba(255, 255, 255, 0.2)' }}
                       >
                         ✕ Close
                       </button>
                     </div>
                     
-                    <p style={{ color: 'var(--color-text-muted)', marginBottom: 16 }}>
+                    <p style={{ color: '#CBD5E1', marginBottom: 16 }}>
                       {selectedTutorial.description}
                     </p>
                     
                     <div className="stack" style={{ gap: 16 }}>
                       {selectedTutorial.steps.map((step, index) => (
-                        <div key={index} className="card" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                        <div key={index} className="card" style={{ backgroundColor: '#132d4b', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
                           <div className="row" style={{ alignItems: 'flex-start', gap: 12 }}>
                             <div style={{
                               width: '32px',
                               height: '32px',
                               borderRadius: '50%',
-                              backgroundColor: 'var(--color-primary-green)',
+                              backgroundColor: '#15803D',
                               color: 'white',
                               display: 'flex',
                               alignItems: 'center',
@@ -528,16 +647,16 @@ export default function HelpSection() {
                       </div>
                     </div>
                     
-                    <h4 style={{ marginBottom: 8 }}>{video.title}</h4>
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginBottom: 12 }}>
+                    <h4 style={{ marginBottom: 8, color: '#FFFFFF' }}>{video.title}</h4>
+                    <p style={{ color: '#CBD5E1', fontSize: '14px', marginBottom: 12 }}>
                       {video.description}
                     </p>
                     
                     <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                      <span style={{ fontSize: '12px', color: '#94A3B8' }}>
                         ⏱️ {video.duration}
                       </span>
-                      <button className="btn outline" style={{ fontSize: '12px' }}>
+                      <button className="btn outline" style={{ fontSize: '12px', color: '#38BDF8', borderColor: 'rgba(56, 189, 248, 0.4)' }}>
                         Watch Video →
                       </button>
                     </div>
@@ -550,50 +669,52 @@ export default function HelpSection() {
           {/* Contact Section */}
           {activeTab === 'contact' && (
             <div className="card" style={{ marginTop: 16 }}>
-              <h2>Contact Support</h2>
+              <h2 style={{ color: '#E8F1F8' }}>Contact Support</h2>
               
               <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '48px', marginBottom: 16 }}>📧</div>
-                  <h4>Email Support</h4>
-                  <p style={{ color: 'var(--color-text-muted)', marginBottom: 16 }}>
+                  <h4 style={{ color: '#FFFFFF' }}>Email Support</h4>
+                  <p style={{ color: '#CBD5E1', marginBottom: 16 }}>
                     Get detailed help via email
                   </p>
-                  <button 
-                    className="btn"
-                    onClick={() => window.open('mailto:support@breedai.com')}
+                  <a 
+                    href="mailto:akeemchoudhary0786@gmail.com"
+                    className="btn" 
+                    style={{ backgroundColor: '#15803D', color: '#FFFFFF', border: 'none', textDecoration: 'none' }}
                   >
-                    support@breedai.com
-                  </button>
+                    akeemchoudhary0786@gmail.com
+                  </a>
                 </div>
                 
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '48px', marginBottom: 16 }}>📞</div>
-                  <h4>Phone Support</h4>
-                  <p style={{ color: 'var(--color-text-muted)', marginBottom: 16 }}>
+                  <h4 style={{ color: '#FFFFFF' }}>Phone Support</h4>
+                  <p style={{ color: '#CBD5E1', marginBottom: 16 }}>
                     Call us for immediate assistance
                   </p>
-                  <button 
-                    className="btn"
-                    onClick={() => window.open('tel:+91-800-123-4567')}
+                  <a 
+                    href="tel:+919320621856"
+                    className="btn" 
+                    style={{ backgroundColor: '#15803D', color: '#FFFFFF', border: 'none', textDecoration: 'none' }}
                   >
-                    +91-800-123-4567
-                  </button>
+                    +91 9320621856
+                  </a>
                 </div>
                 
                 <div className="card" style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '48px', marginBottom: 16 }}>💬</div>
-                  <h4>Live Chat</h4>
-                  <p style={{ color: 'var(--color-text-muted)', marginBottom: 16 }}>
+                  <h4 style={{ color: '#FFFFFF' }}>Live Chat</h4>
+                  <p style={{ color: '#CBD5E1', marginBottom: 16 }}>
                     Chat with our support team
                   </p>
-                  <button className="btn">Start Chat</button>
+                  <button className="btn" style={{ backgroundColor: '#15803D', color: '#FFFFFF', border: 'none' }}>Start Chat</button>
                 </div>
               </div>
               
-              <div className="card" style={{ marginTop: 16, backgroundColor: '#e3f2fd' }}>
-                <h4>📋 Before Contacting Support</h4>
-                <div className="stack" style={{ gap: 8 }}>
+              <div className="card" style={{ marginTop: 16, background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)', border: '1px solid rgba(56, 189, 248, 0.25)', color: '#CBD5E1' }}>
+                <h4 style={{ color: '#FFFFFF' }}>📋 Before Contacting Support</h4>
+                <div className="stack" style={{ gap: 8, color: '#CBD5E1' }}>
                   <div>• Check the FAQ section above</div>
                   <div>• Try restarting the app</div>
                   <div>• Clear app cache and data</div>

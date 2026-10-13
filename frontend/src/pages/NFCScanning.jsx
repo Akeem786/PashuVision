@@ -58,7 +58,10 @@ export default function NFCScanning() {
     setScannedData(null)
 
     try {
-      const reader = new NDEFReader()
+      if (!('NDEFReader' in window)) {
+        throw new Error('Web NFC is not supported on this browser/device')
+      }
+      const reader = new window.NDEFReader()
       nfcReaderRef.current = reader
 
       // Add event listeners

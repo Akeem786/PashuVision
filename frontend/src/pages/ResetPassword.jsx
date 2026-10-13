@@ -26,8 +26,24 @@ export default function ResetPassword() {
         <div className="card" style={{ maxWidth: 520 }}>
           <h1>Reset Password</h1>
           <div className="stack">
-            <input className="input" value={token} onChange={e => setToken(e.target.value)} placeholder="Paste reset token" />
-            <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="New password" />
+            <input 
+              id="token"
+              name="token"
+              className="input" 
+              value={token} 
+              onChange={e => setToken(e.target.value)} 
+              placeholder="Paste reset token" 
+            />
+            <input 
+              id="password"
+              name="password"
+              className="input" 
+              type="password" 
+              autoComplete="new-password"
+              value={password} 
+              onChange={e => setPassword(e.target.value)} 
+              placeholder="New password" 
+            />
             <button className="btn" disabled={loading} onClick={submit}>{loading ? 'Saving…' : 'Set Password'}</button>
             {ok && <div style={{ color: 'var(--color-muted)' }}>Password updated. You can log in now.</div>}
             {error && <div style={{ color: 'salmon' }}>{error}</div>}

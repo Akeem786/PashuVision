@@ -1,13 +1,20 @@
 import Header from '../components/Header.jsx'
 import Layout from '../components/Layout.jsx'
 import { useEffect, useRef, useState } from 'react'
+import AutoQRGenerationService from '../services/AutoQRGenerationService.js'
+
+const qrService = new AutoQRGenerationService()
 
 export default function Scan() {
   const videoRef = useRef(null)
+  const fileInputRef = useRef(null)
   const [manualId, setManualId] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [scanning, setScanning] = useState(false)
+  const [resolving, setResolving] = useState(false)
   const [scannedId, setScannedId] = useState('')
+  const [cameraAvailable, setCameraAvailable] = useState(true)
   const qrScannerRef = useRef(null)
 
   useEffect(() => {
@@ -36,9 +43,13 @@ export default function Scan() {
   }, [])
 
   const startScanning = async () => {
+    setError('')
+    setSuccess('')
+    setScannedId('')
     try {
-      if (!window.QrScanner) {
-        setError('QR Scanner not available. Please use manual ID entry.')
+      const QrScanner = window.QrScanner
+      if (!QrScanner) {
+        setError('QR Scanner library is not yet ready. Please use manual ID entry.')
         return
       }
 
@@ -48,104 +59,191 @@ export default function Scan() {
       // Check if camera is available
       const hasCamera = await QrScanner.hasCamera()
       if (!hasCamera) {
-        setError('No camera found. Please use manual ID entry.')
+        setCameraAvailable(false)
+        setError('No camera found on this device. Please use manual ID entry or upload an image.')
         return
       }
 
-      setError('')
       setScanning(true)
 
       qrScannerRef.current = new QrScanner(
         video,
         (result) => {
           const scannedValue = result.data || result
-          const id = scannedValue.startsWith('animal:') ? scannedValue.slice(7) : scannedValue
-          setScannedId(id)
-          setScanning(false)
-          stopScanning()
-          
-          // Navigate to record
-          setTimeout(() => {
-            window.location.href = `/records?id=${encodeURIComponent(id)}`
-          }, 500)
+          handleCodeDetected(scannedValue)
         },
         {
           returnDetailedScanResult: true,
-          preferredCamera: 'environment'
+          preferredCamera: 'environment',
+          highlightScanRegion: true,
+          highlightCodeOutline: true
         }
       )
 
       await qrScannerRef.current.start()
     } catch (err) {
       console.error('Scan error:', err)
-      setError(err.message || 'Camera access denied. Please use manual ID entry.')
+      setError(err.message || 'Camera access denied. Please grant camera permissions or use manual entry.')
       setScanning(false)
     }
   }
 
   const stopScanning = () => {
     if (qrScannerRef.current) {
-      qrScannerRef.current.stop()
-      qrScannerRef.current.destroy()
+      try {
+        qrScannerRef.current.stop()
+        qrScannerRef.current.destroy()
+      } catch (_) {}
       qrScannerRef.current = null
     }
     setScanning(false)
   }
 
+  // Unified animal ID resolver with verification & error handling
+  const resolveAnimalRecord = async (animalId) => {
+    setResolving(true)
+    setError('')
+    setSuccess('')
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      setResolving(false)
+      setError('Authentication required. Please log in first.')
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/animals/${encodeURIComponent(animalId)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      const data = await res.json().catch(() => ({}))
+
+      if (res.status === 404) {
+        setError(`Animal not found (404): Animal with ID '${animalId}' does not exist or has been deleted.`)
+        setResolving(false)
+        return
+      }
+
+      if (res.status === 403) {
+        setError(`Access restricted (403): You do not have permission to view records for animal '${animalId}'.`)
+        setResolving(false)
+        return
+      }
+
+      if (!res.ok) {
+        setError(data.error || `Failed to verify animal ID (${res.status}).`)
+        setResolving(false)
+        return
+      }
+
+      // Successful verification
+      setScannedId(animalId)
+      setSuccess(`✅ Animal '${data.predictedBreed || 'Record'}' (ID: ${animalId}) verified! Redirecting to details...`)
+
+      setTimeout(() => {
+        window.location.href = `/records?id=${encodeURIComponent(animalId)}`
+      }, 700)
+    } catch (err) {
+      console.error('Record resolution error:', err)
+      setError(`Network error: Unable to connect to PashuVision server. Please check your internet connection.`)
+    } finally {
+      setResolving(false)
+    }
+  }
+
+  const handleCodeDetected = (rawScannedText) => {
+    stopScanning()
+
+    const parseResult = qrService.parseScannedCode(rawScannedText)
+    if (!parseResult.success) {
+      setError(`Invalid QR Code: ${parseResult.error}`)
+      return
+    }
+
+    resolveAnimalRecord(parseResult.id)
+  }
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setError('')
+    setSuccess('')
+    setResolving(true)
+
+    try {
+      const QrScanner = window.QrScanner
+      if (!QrScanner) {
+        throw new Error('QR Scanner library not loaded')
+      }
+
+      const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true })
+      const rawText = result.data || result
+      handleCodeDetected(rawText)
+    } catch (err) {
+      console.error('File scan error:', err)
+      setError('Could not detect a valid QR code in the uploaded image. Please try a clearer photo or enter ID manually.')
+      setResolving(false)
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   const handleManualSubmit = (e) => {
     e.preventDefault()
-    if (!manualId.trim()) {
+    const trimmed = manualId.trim()
+    if (!trimmed) {
       setError('Please enter an Animal ID')
       return
     }
-    window.location.href = `/records?id=${encodeURIComponent(manualId.trim())}`
+
+    const parseResult = qrService.parseScannedCode(trimmed)
+    if (!parseResult.success) {
+      setError(`Invalid Animal ID: ${parseResult.error}`)
+      return
+    }
+
+    stopScanning()
+    resolveAnimalRecord(parseResult.id)
   }
 
   return (
     <Layout>
-      <div className="container" style={{ paddingTop: '80px' }}>
+      <div className="container" style={{ paddingTop: '80px', maxWidth: '640px', margin: '0 auto', paddingBottom: '40px' }}>
         <div className="card" style={{
           background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
           borderRadius: '16px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
           border: '1px solid rgba(0,0,0,0.05)',
-          maxWidth: '600px',
-          margin: '0 auto'
+          padding: '24px'
         }}>
           {/* Header */}
           <div style={{
             textAlign: 'center',
             marginBottom: '24px',
-            paddingBottom: '20px',
+            paddingBottom: '16px',
             borderBottom: '2px solid #e9ecef'
           }}>
-            <div style={{
-              fontSize: '48px',
-              marginBottom: '12px'
-            }}>
-              📱
+            <div style={{ fontSize: '44px', marginBottom: '8px' }}>
+              📷
             </div>
             <h1 style={{
-              fontSize: '2rem',
+              fontSize: '1.8rem',
               fontWeight: 'bold',
               margin: 0,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #2b6cb0 0%, #11a36a 100%)',
               WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              WebkitTextFillColor: 'transparent'
             }}>
-              Scan QR Code
+              Scan Animal QR Code
             </h1>
-            <p style={{
-              color: '#6c757d',
-              margin: '8px 0 0 0',
-              fontSize: '1rem'
-            }}>
-              Scan a QR code or enter Animal ID manually
+            <p style={{ color: '#6c757d', margin: '8px 0 0 0', fontSize: '14px' }}>
+              Scan an animal tag QR code, upload a photo, or enter ID manually
             </p>
           </div>
 
-          {/* Error Message */}
+          {/* Error Banner */}
           {error && (
             <div style={{
               background: '#ffebee',
@@ -156,16 +254,28 @@ export default function Scan() {
               border: '1px solid #ffcdd2',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'space-between',
               gap: '8px',
               fontSize: '14px'
             }}>
-              <span>⚠️</span>
-              <span>{error}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+              {!scanning && (
+                <button 
+                  className="btn secondary" 
+                  onClick={startScanning}
+                  style={{ fontSize: '12px', padding: '4px 10px', height: 'auto' }}
+                >
+                  Try Again
+                </button>
+              )}
             </div>
           )}
 
-          {/* Success Message */}
-          {scannedId && (
+          {/* Success Banner */}
+          {success && (
             <div style={{
               background: '#e8f5e9',
               color: '#2e7d32',
@@ -178,20 +288,47 @@ export default function Scan() {
               gap: '8px',
               fontSize: '14px'
             }}>
-              <span>✅</span>
-              <span>Scanned ID: <strong>{scannedId}</strong></span>
+              <span>{success}</span>
             </div>
           )}
 
-          {/* Video Scanner */}
+          {/* Resolving / Loading State */}
+          {resolving && (
+            <div style={{
+              background: '#e3f2fd',
+              color: '#1565c0',
+              padding: '14px 16px',
+              borderRadius: '12px',
+              marginBottom: '20px',
+              border: '1px solid #bbdefb',
+              textAlign: 'center',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px'
+            }}>
+              <div style={{
+                width: '16px',
+                height: '16px',
+                border: '2px solid #1565c0',
+                borderTop: '2px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite'
+              }} />
+              <span>Verifying animal identifier with PashuVision server...</span>
+            </div>
+          )}
+
+          {/* Video Scanner View */}
           <div style={{
             position: 'relative',
             width: '100%',
-            marginBottom: '24px',
+            marginBottom: '20px',
             borderRadius: '12px',
             overflow: 'hidden',
             background: '#000',
-            minHeight: '300px',
+            minHeight: '280px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -210,16 +347,19 @@ export default function Scan() {
               <div style={{
                 color: '#fff',
                 textAlign: 'center',
-                padding: '40px'
+                padding: '30px'
               }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📷</div>
-                <div style={{ fontSize: '16px', opacity: 0.8 }}>
-                  Camera will start when scanning begins
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎯</div>
+                <div style={{ fontSize: '15px', opacity: 0.9, marginBottom: '8px' }}>
+                  Camera is currently paused
+                </div>
+                <div style={{ fontSize: '13px', opacity: 0.7 }}>
+                  Click Start Scanning or choose an image below
                 </div>
               </div>
             )}
             
-            {/* Scanning Overlay */}
+            {/* Target Reticle */}
             {scanning && (
               <div style={{
                 position: 'absolute',
@@ -228,10 +368,10 @@ export default function Scan() {
                 transform: 'translate(-50%, -50%)',
                 width: '200px',
                 height: '200px',
-                border: '3px solid #4CAF50',
-                borderRadius: '12px',
+                border: '3px solid #11a36a',
+                borderRadius: '16px',
                 pointerEvents: 'none',
-                boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
+                boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)'
               }} />
             )}
           </div>
@@ -239,174 +379,110 @@ export default function Scan() {
           {/* Control Buttons */}
           <div style={{
             display: 'flex',
-            gap: '12px',
+            gap: '10px',
             marginBottom: '24px',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            flexWrap: 'wrap'
           }}>
             {!scanning ? (
               <button
                 onClick={startScanning}
                 className="btn"
+                disabled={resolving}
                 style={{
-                  padding: '12px 24px',
-                  fontSize: '16px',
+                  padding: '10px 20px',
+                  fontSize: '14px',
                   fontWeight: '600',
-                  background: 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+                  background: '#11a36a',
                   color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-                  transition: 'all 0.3s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)'
-                  e.target.style.boxShadow = '0 6px 16px rgba(76, 175, 80, 0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)'
-                  e.target.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.3)'
+                  borderRadius: '8px',
+                  cursor: 'pointer'
                 }}
               >
-                🎥 Start Scanning
+                🎥 Start Camera Scanner
               </button>
             ) : (
               <button
                 onClick={stopScanning}
-                className="btn"
+                className="btn secondary"
                 style={{
-                  padding: '12px 24px',
-                  fontSize: '16px',
+                  padding: '10px 20px',
+                  fontSize: '14px',
                   fontWeight: '600',
-                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
-                  transition: 'all 0.3s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)'
-                  e.target.style.boxShadow = '0 6px 16px rgba(244, 67, 54, 0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)'
-                  e.target.style.boxShadow = '0 4px 12px rgba(244, 67, 54, 0.3)'
+                  borderRadius: '8px',
+                  cursor: 'pointer'
                 }}
               >
-                ⏹️ Stop Scanning
+                ⏹️ Stop Camera
               </button>
             )}
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="btn secondary"
+              disabled={resolving}
+              style={{
+                padding: '10px 20px',
+                fontSize: '14px',
+                fontWeight: '600',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              🖼️ Upload QR Image
+            </button>
+            <input 
+              ref={fileInputRef} 
+              type="file" 
+              accept="image/*" 
+              style={{ display: 'none' }} 
+              onChange={handleFileUpload} 
+            />
           </div>
 
-          {/* Divider */}
+          {/* Manual Entry Form */}
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            margin: '24px 0',
-            gap: '12px'
+            background: 'white',
+            borderRadius: '12px',
+            padding: '20px',
+            border: '1px solid #e9ecef'
           }}>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              background: '#e9ecef'
-            }} />
-            <span style={{
-              color: '#6c757d',
-              fontSize: '14px',
-              fontWeight: '500'
-            }}>
-              OR
-            </span>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              background: '#e9ecef'
-            }} />
-          </div>
-
-          {/* Manual ID Entry */}
-          <form onSubmit={handleManualSubmit}>
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              marginBottom: '16px'
-            }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#495057' }}>
+              Manual Animal ID Entry
+            </h3>
+            <form onSubmit={handleManualSubmit} style={{ display: 'flex', gap: '8px' }}>
               <input
                 type="text"
-                className="input"
-                placeholder="Enter Animal ID manually"
                 value={manualId}
-                onChange={(e) => {
-                  setManualId(e.target.value)
-                  setError('')
-                }}
+                onChange={(e) => setManualId(e.target.value)}
+                placeholder="Enter Animal ID (e.g. 3rAPptb6ZgkLqQFo1kCg0)"
+                disabled={resolving}
                 style={{
                   flex: 1,
-                  padding: '14px 16px',
-                  fontSize: '16px',
-                  borderRadius: '12px',
-                  border: '2px solid #e9ecef',
-                  fontFamily: 'Times New Roman, serif',
-                  transition: 'all 0.3s'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#667eea'
-                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)'
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e9ecef'
-                  e.target.style.boxShadow = 'none'
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  border: '1px solid #ced4da',
+                  fontSize: '14px',
+                  outline: 'none'
                 }}
               />
               <button
                 type="submit"
                 className="btn"
+                disabled={resolving || !manualId.trim()}
                 style={{
-                  padding: '14px 28px',
-                  fontSize: '16px',
+                  padding: '10px 18px',
+                  fontSize: '14px',
                   fontWeight: '600',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: '#2b6cb0',
                   color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-                  transition: 'all 0.3s',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)'
-                  e.target.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)'
-                  e.target.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)'
+                  borderRadius: '8px',
+                  cursor: 'pointer'
                 }}
               >
-                🔍 Open Record
+                {resolving ? 'Checking...' : 'Open Record'}
               </button>
-            </div>
-          </form>
-
-          {/* Help Text */}
-          <div style={{
-            background: '#f8f9fa',
-            padding: '16px',
-            borderRadius: '12px',
-            fontSize: '14px',
-            color: '#6c757d',
-            lineHeight: '1.6'
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '8px', color: '#495057' }}>
-              💡 How to use:
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '20px' }}>
-              <li>Click "Start Scanning" to activate your camera</li>
-              <li>Point your camera at a QR code</li>
-              <li>Or enter the Animal ID manually in the field above</li>
-            </ul>
+            </form>
           </div>
         </div>
       </div>

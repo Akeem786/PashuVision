@@ -194,20 +194,20 @@ export default function ARTrainingMode() {
 
         // Draw label
         ctx.fillStyle = '#FFFFFF'
-        ctx.font = 'bold 14px Arial'
+        ctx.font = 'bold 14px "Times New Roman", Times, serif'
         ctx.textAlign = 'center'
         ctx.fillText(point.label, x, y - 25)
       })
 
       // Draw breed name
       ctx.fillStyle = overlay.color
-      ctx.font = 'bold 20px Arial'
+      ctx.font = 'bold 20px "Times New Roman", Times, serif'
       ctx.textAlign = 'left'
       ctx.fillText(selectedBreed.name, 20, 40)
 
       // Draw characteristics
       ctx.fillStyle = '#FFFFFF'
-      ctx.font = '14px Arial'
+      ctx.font = '14px "Times New Roman", Times, serif'
       ctx.textAlign = 'left'
       
       selectedBreed.characteristics.forEach((char, index) => {

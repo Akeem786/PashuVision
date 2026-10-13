@@ -40,9 +40,15 @@ export default function OTPLogin() {
         body: JSON.stringify({ phone })
       })
 
+      let data = {}
+      try {
+        data = await res.json()
+      } catch {
+        data = {}
+      }
+
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to send OTP')
+        throw new Error(data.error || data.message || 'Failed to send OTP')
       }
 
       setOtpSent(true)
@@ -72,12 +78,16 @@ export default function OTPLogin() {
         body: JSON.stringify({ phone, otp })
       })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Invalid OTP')
+      let data = {}
+      try {
+        data = await res.json()
+      } catch {
+        data = {}
       }
 
-      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Invalid OTP')
+      }
       
       if (data.user) {
         // User exists, login directly
@@ -116,12 +126,17 @@ export default function OTPLogin() {
         })
       })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Failed to setup password')
+      let data = {}
+      try {
+        data = await res.json()
+      } catch {
+        data = {}
       }
 
-      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Failed to setup password')
+      }
+
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       window.location.href = '/dashboard'

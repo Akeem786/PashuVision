@@ -154,13 +154,49 @@ export default function AdminBreedImages() {
     <Layout>
       <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
         <div className="grid" style={{ gridTemplateColumns: sidebarView ? '1fr 350px' : '1fr', gap: '20px', alignItems: 'start' }}>
-          <div className="card">
+          <div className="card pv-breed-images">
+            <style>{`
+              .pv-breed-images h1 {
+                color: #E8F1F8 !important;
+              }
+              .pv-breed-images h3 {
+                color: #E8F1F8 !important;
+              }
+              .pv-breed-images .stat-card {
+                background: linear-gradient(180deg, #132d4b 0%, #0e2338 100%) !important;
+                border: 1px solid rgba(255, 255, 255, 0.12) !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+              }
+              .pv-breed-images .stat-card h4 {
+                color: #CBD5E1 !important;
+              }
+              .pv-breed-images .breed-item-card {
+                background: linear-gradient(180deg, #132d4b 0%, #0e2338 100%) !important;
+                border: 1px solid rgba(255, 255, 255, 0.12) !important;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+              }
+              .pv-breed-images .breed-item-card:hover {
+                border-color: rgba(255, 255, 255, 0.22) !important;
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35) !important;
+              }
+              .pv-breed-images .breed-item-card h3 {
+                color: #FFFFFF !important;
+              }
+              .pv-breed-images .btn-refresh {
+                background-color: #1565C0 !important;
+                color: #FFFFFF !important;
+                border: none !important;
+              }
+              .pv-breed-images .btn-refresh:hover {
+                background-color: #0D47A1 !important;
+              }
+            `}</style>
           <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h1>🖼️ Breed Images Management</h1>
+            <h1 style={{ color: '#E8F1F8' }}>🖼️ Breed Images Management</h1>
             <button 
-              className="btn secondary" 
+              className="btn secondary btn-refresh" 
               onClick={loadBreeds}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#1565C0', color: '#FFFFFF', border: 'none' }}
             >
               🔄 Refresh
             </button>
@@ -197,23 +233,23 @@ export default function AdminBreedImages() {
           )}
 
           {/* Statistics */}
-          <div className="card" style={{ marginBottom: '20px' }}>
+          <div className="card stat-card" style={{ marginBottom: '20px', background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)', border: '1px solid rgba(255, 255, 255, 0.12)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)' }}>
             <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
               <div style={{ textAlign: 'center' }}>
-                <h4>Total Breeds</h4>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#2196F3' }}>
+                <h4 style={{ color: '#CBD5E1' }}>Total Breeds</h4>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#38BDF8' }}>
                   {breeds.length}
                 </div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <h4>Cattle</h4>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#4CAF50' }}>
+                <h4 style={{ color: '#CBD5E1' }}>Cattle</h4>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#4ADE80' }}>
                   {cattleBreeds.length}
                 </div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <h4>Buffalo</h4>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#FF9800' }}>
+                <h4 style={{ color: '#CBD5E1' }}>Buffalo</h4>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#FB923C' }}>
                   {buffaloBreeds.length}
                 </div>
               </div>
@@ -221,25 +257,55 @@ export default function AdminBreedImages() {
           </div>
 
           {/* Filters */}
-          <div className="card" style={{ marginBottom: '20px' }}>
+          <div className="card" style={{ marginBottom: '20px', background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)', border: '1px solid rgba(255, 255, 255, 0.12)' }}>
             <div>
-              <label style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block' }}>Filter by Breed Type:</label>
+              <label style={{ fontWeight: 'bold', marginBottom: '8px', display: 'block', color: '#E2E8F0' }}>Filter by Breed Type:</label>
               <div className="row" style={{ gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   className={speciesFilter === 'all' ? 'btn' : 'btn secondary'}
                   onClick={() => setSpeciesFilter('all')}
+                  style={speciesFilter === 'all' ? {
+                    backgroundColor: '#15803D',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 2px 6px rgba(21, 128, 61, 0.4)'
+                  } : {
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    color: '#86EFAC',
+                    border: '1px solid rgba(134, 239, 172, 0.4)'
+                  }}
                 >
                   All Types ({breeds.length})
                 </button>
                 <button
                   className={speciesFilter === 'cattle' ? 'btn' : 'btn secondary'}
                   onClick={() => setSpeciesFilter('cattle')}
+                  style={speciesFilter === 'cattle' ? {
+                    backgroundColor: '#1565C0',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 2px 6px rgba(21, 101, 192, 0.4)'
+                  } : {
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    color: '#93C5FD',
+                    border: '1px solid rgba(147, 197, 253, 0.4)'
+                  }}
                 >
                   Cattle ({cattleBreeds.length})
                 </button>
                 <button
                   className={speciesFilter === 'buffalo' ? 'btn' : 'btn secondary'}
                   onClick={() => setSpeciesFilter('buffalo')}
+                  style={speciesFilter === 'buffalo' ? {
+                    backgroundColor: '#1565C0',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 2px 6px rgba(21, 101, 192, 0.4)'
+                  } : {
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    color: '#93C5FD',
+                    border: '1px solid rgba(147, 197, 253, 0.4)'
+                  }}
                 >
                   Buffalo ({buffaloBreeds.length})
                 </button>
@@ -249,13 +315,13 @@ export default function AdminBreedImages() {
 
           {/* Breeds List */}
           <div className="card" style={{ padding: '28px', borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
-            <h3 style={{ margin: '0 0 28px 0', fontSize: '26px', fontWeight: '600', color: '#1976d2', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h3 style={{ margin: '0 0 28px 0', fontSize: '26px', fontWeight: '600', color: '#E8F1F8', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '30px' }}>📷</span>
               Breed Images ({filteredBreeds.length})
             </h3>
 
             {filteredBreeds.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-muted)' }}>
+              <div style={{ textAlign: 'center', padding: '40px', color: '#94A3B8' }}>
                 No breeds found
               </div>
             ) : (
@@ -269,26 +335,28 @@ export default function AdminBreedImages() {
                   return (
                     <div 
                       key={breed.id} 
-                      className="card"
+                      className="card breed-item-card"
                       style={{ 
-                        border: selectedBreed?.id === breed.id ? '2px solid #2196F3' : '1px solid #e0e0e0',
+                        background: 'linear-gradient(180deg, #132d4b 0%, #0e2338 100%)',
+                        border: selectedBreed?.id === breed.id ? '2px solid #38BDF8' : '1px solid rgba(255, 255, 255, 0.12)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
                         transition: 'all 0.2s',
                         cursor: 'pointer'
                       }}
                       onClick={() => setDetailedBreed(breed)}
                     >
                       <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <h3 style={{ margin: 0, color: '#2196F3' }}>{breed.name}</h3>
+                        <h3 style={{ margin: 0, color: '#FFFFFF' }}>{breed.name}</h3>
                         <div className="row" style={{ gap: '8px', alignItems: 'center' }}>
                           {hasImage && (
                             <span style={{ 
                               fontSize: '13px', 
                               padding: '6px 14px', 
-                              backgroundColor: '#4CAF50', 
-                              color: 'white', 
+                              backgroundColor: '#15803D', 
+                              color: '#FFFFFF', 
                               borderRadius: '20px',
                               fontWeight: '600',
-                              boxShadow: '0 2px 6px rgba(76, 175, 80, 0.3)',
+                              boxShadow: '0 2px 6px rgba(21, 128, 61, 0.4)',
                               display: 'inline-block',
                               pointerEvents: 'none',
                               userSelect: 'none'
@@ -311,23 +379,23 @@ export default function AdminBreedImages() {
                             borderRadius: '8px',
                             fontWeight: '500',
                             border: 'none',
-                            backgroundColor: '#2196F3',
-                            color: 'white',
+                            backgroundColor: '#1565C0',
+                            color: '#FFFFFF',
                             transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '8px',
-                            boxShadow: '0 2px 6px rgba(33, 150, 243, 0.3)'
+                            boxShadow: '0 2px 6px rgba(21, 101, 192, 0.3)'
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1976d2'
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(33, 150, 243, 0.4)'
+                            e.currentTarget.style.backgroundColor = '#0D47A1'
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(21, 101, 192, 0.4)'
                             e.currentTarget.style.transform = 'translateY(-2px)'
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#2196F3'
-                            e.currentTarget.style.boxShadow = '0 2px 6px rgba(33, 150, 243, 0.3)'
+                            e.currentTarget.style.backgroundColor = '#1565C0'
+                            e.currentTarget.style.boxShadow = '0 2px 6px rgba(21, 101, 192, 0.3)'
                             e.currentTarget.style.transform = 'translateY(0)'
                           }}
                           onClick={(e) => {
@@ -442,7 +510,7 @@ export default function AdminBreedImages() {
                                 border: '1px solid #e9ecef'
                               }}>
                                 <strong style={{ color: '#495057', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Breed ID</strong>
-                                <div style={{ color: '#212529', marginTop: '6px', fontSize: '11px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{breed.id || 'N/A'}</div>
+                                <div style={{ color: '#212529', marginTop: '6px', fontSize: '11px', fontFamily: '"Times New Roman", Times, serif', wordBreak: 'break-all' }}>{breed.id || 'N/A'}</div>
                               </div>
                             </div>
                           </div>
@@ -522,7 +590,7 @@ export default function AdminBreedImages() {
                                 )}
                                 <div style={{ marginTop: '12px', padding: '10px', backgroundColor: 'white', borderRadius: '6px', fontSize: '12px' }}>
                                   <strong>Full Prediction Data:</strong>
-                                  <div style={{ marginTop: '6px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                                  <div style={{ marginTop: '6px', fontFamily: '"Times New Roman", Times, serif', whiteSpace: 'pre-wrap' }}>
                                     {breed.description}
                                   </div>
                                 </div>
@@ -585,23 +653,23 @@ export default function AdminBreedImages() {
                               borderRadius: '8px',
                               fontWeight: '500',
                               border: 'none',
-                              backgroundColor: '#2196F3',
-                              color: 'white',
+                              backgroundColor: '#1565C0',
+                              color: '#FFFFFF',
                               transition: 'all 0.2s',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               gap: '8px',
-                              boxShadow: '0 2px 6px rgba(33, 150, 243, 0.3)'
+                              boxShadow: '0 2px 6px rgba(21, 101, 192, 0.3)'
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#1976d2'
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(33, 150, 243, 0.4)'
+                              e.currentTarget.style.backgroundColor = '#0D47A1'
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(21, 101, 192, 0.4)'
                               e.currentTarget.style.transform = 'translateY(-2px)'
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = '#2196F3'
-                              e.currentTarget.style.boxShadow = '0 2px 6px rgba(33, 150, 243, 0.3)'
+                              e.currentTarget.style.backgroundColor = '#1565C0'
+                              e.currentTarget.style.boxShadow = '0 2px 6px rgba(21, 101, 192, 0.3)'
                               e.currentTarget.style.transform = 'translateY(0)'
                             }}
                             onClick={(e) => {
@@ -1226,7 +1294,7 @@ export default function AdminBreedImages() {
                   </div>
                   <div>
                     <strong style={{ color: '#666' }}>Breed ID:</strong>
-                    <div style={{ color: '#333', marginTop: '4px', fontSize: '11px', fontFamily: 'monospace' }}>{selectedImage.breedId}</div>
+                    <div style={{ color: '#333', marginTop: '4px', fontSize: '11px', fontFamily: '"Times New Roman", Times, serif' }}>{selectedImage.breedId}</div>
                   </div>
                   {selectedImage.animalRecord && (
                     <>
@@ -1274,7 +1342,7 @@ export default function AdminBreedImages() {
                     color: '#333', 
                     marginTop: '4px', 
                     fontSize: '11px', 
-                    fontFamily: 'monospace',
+                    fontFamily: '"Times New Roman", Times, serif',
                     wordBreak: 'break-all',
                     padding: '8px',
                     backgroundColor: 'white',

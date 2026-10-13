@@ -77,6 +77,18 @@ export default function Register() {
           border: '1px solid var(--glass-border)',
           boxShadow: 'var(--shadow-lg)'
         }}>
+          {/* Back to Home Navigation */}
+          <div className="back-to-home-nav">
+            <Link 
+              to="/" 
+              className="back-to-home-link"
+              aria-label="Back to Home"
+            >
+              <span className="back-arrow" aria-hidden="true">←</span>
+              <span>Back to Home</span>
+            </Link>
+          </div>
+
           {/* Header */}
           <div style={{
             textAlign: 'center',
@@ -123,18 +135,24 @@ export default function Register() {
               gap: 'var(--spacing-md)'
             }}>
               <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: 'var(--spacing-xs)',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: 'Times New Roman, serif'
-                }}>
+                <label 
+                  htmlFor="name"
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--spacing-xs)',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'Times New Roman, serif'
+                  }}
+                >
                   Full Name *
                 </label>
                 <input
+                  id="name"
+                  name="name"
                   type="text"
+                  autoComplete="name"
                   className="input"
                   value={name}
                   onChange={e => setName(e.target.value)}
@@ -150,18 +168,24 @@ export default function Register() {
               </div>
 
               <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: 'var(--spacing-xs)',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: 'Times New Roman, serif'
-                }}>
+                <label 
+                  htmlFor="email"
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--spacing-xs)',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'Times New Roman, serif'
+                  }}
+                >
                   Email Address *
                 </label>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   className="input"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -177,18 +201,24 @@ export default function Register() {
               </div>
 
               <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: 'var(--spacing-xs)',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: 'Times New Roman, serif'
-                }}>
+                <label 
+                  htmlFor="phone"
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--spacing-xs)',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'Times New Roman, serif'
+                  }}
+                >
                   Phone Number *
                 </label>
                 <input
+                  id="phone"
+                  name="phone"
                   type="tel"
+                  autoComplete="tel"
                   className="input"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
@@ -201,21 +231,27 @@ export default function Register() {
                     fontFamily: 'Times New Roman, serif'
                   }}
                 />
-          </div>
+              </div>
 
               <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: 'var(--spacing-xs)',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: 'Times New Roman, serif'
-                }}>
+                <label 
+                  htmlFor="password"
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--spacing-xs)',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'Times New Roman, serif'
+                  }}
+                >
                   Password *
                 </label>
                 <input
+                  id="password"
+                  name="password"
                   type="password"
+                  autoComplete="new-password"
                   className="input"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -228,21 +264,27 @@ export default function Register() {
                     fontFamily: 'Times New Roman, serif'
                   }}
                 />
-          </div>
+              </div>
 
               <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: 'var(--spacing-xs)',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: 'var(--color-text-primary)',
-                  fontFamily: 'Times New Roman, serif'
-                }}>
+                <label 
+                  htmlFor="confirmPassword"
+                  style={{
+                    display: 'block',
+                    marginBottom: 'var(--spacing-xs)',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: 'Times New Roman, serif'
+                  }}
+                >
                   Confirm Password *
                 </label>
                 <input
+                  id="confirmPassword"
+                  name="confirmPassword"
                   type="password"
+                  autoComplete="new-password"
                   className="input"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
@@ -255,7 +297,7 @@ export default function Register() {
                     fontFamily: 'Times New Roman, serif'
                   }}
                 />
-          </div>
+              </div>
 
             {error && (
                 <div style={{

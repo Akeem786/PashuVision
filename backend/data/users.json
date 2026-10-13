@@ -2,7 +2,7 @@
   {
     "id": "PnEQcZqXsgY369X-1A9dJ",
     "email": "admin@gmail.com",
-    "password_hash": "$2a$10$i85MbnL2HSWB1hlbYZGWhO2YVLsbH9h/1xQMH.h5Kz.HGR2E9JUwW",
+    "password_hash": "$2a$10$Hig.0wUq.ECalXNOappKXOWuSHOpgKdPSphgLVTFRJFEWFS5NhJ8S",
     "name": "Admin",
     "role": "admin",
     "phone": "0123456789",
@@ -19,9 +19,45 @@
     "photo_url": "/uploads/profile_PnEQcZqXsgY369X-1A9dJ_mhtBJx4BrVcSTTaP9esQj.jpg"
   },
   {
+    "id": "admin-example-user",
+    "email": "akeemchoudhary0786@gmail.com",
+    "password_hash": "$2a$10$d.huna.CLhLgw9vuN2euN.eo9wFlhaAAXuiK3ZIcI4xxsCglTtzjC",
+    "name": "Akeem",
+    "role": "admin",
+    "phone": "9320621856",
+    "is_active": true,
+    "permissions": [
+      "all",
+      "create_animal",
+      "view_own_animals",
+      "update_own_animals"
+    ],
+    "created_at": "2026-01-04T10:29:52.335",
+    "updated_at": "2026-10-13T12:05:00.000Z",
+    "region": ""
+  },
+  {
+    "id": "admin-akeem-1856",
+    "email": "akeemchoudhary1856@gmail.com",
+    "password_hash": "$2a$10$d.huna.CLhLgw9vuN2euN.eo9wFlhaAAXuiK3ZIcI4xxsCglTtzjC",
+    "name": "Akeem Choudhary",
+    "role": "admin",
+    "phone": "9320621856",
+    "is_active": true,
+    "permissions": [
+      "all",
+      "create_animal",
+      "view_own_animals",
+      "update_own_animals"
+    ],
+    "created_at": "2026-10-13T12:05:00.000Z",
+    "updated_at": "2026-10-13T12:05:00.000Z",
+    "region": ""
+  },
+  {
     "id": "3o3P1-vNiSratQpR-cYPQ",
     "email": "aakib@gmail.com",
-    "password_hash": "$2a$10$DkvC.uxHGknT73hrYAQ4fu5.tDkEfnblbP1ke3vwN0C13.p6sCE4a",
+    "password_hash": "$2a$10$Hig.0wUq.ECalXNOappKXOWuSHOpgKdPSphgLVTFRJFEWFS5NhJ8S",
     "name": "aakib",
     "role": "user",
     "phone": "974102563",
@@ -33,5 +69,51 @@
     ],
     "created_at": "2026-01-04T11:03:42.708",
     "updated_at": "2026-01-04T11:03:42.708"
+  },
+  {
+    "id": "31BhSTgvN2u6Z2ptTyOlY",
+    "name": "Auth Test User",
+    "email": "auth_test_1789892348136@example.com",
+    "role": "user",
+    "password_hash": "$2a$10$uH1IAjYLfyXzVWmxVmXYkuA7GTSOJmbzTnen2mc0mt8TpYghjtkgi",
+    "created_at": "2026-09-20T08:19:08.245Z",
+    "updated_at": "2026-09-20T08:19:08.245Z",
+    "is_active": true,
+    "permissions": [
+      "create_animal",
+      "view_own_animals",
+      "update_own_animals"
+    ]
+  },
+  {
+    "id": "cNd-qJ2qdh75KJgYBGFA8",
+    "name": "Verification User",
+    "email": "verify_1789897118413@example.com",
+    "role": "user",
+    "password_hash": "$2a$10$fNgDEqZ9yTBJ6mdKes8UcOEo7xoSwNvwbDbGisuiZlha1FI3l31Ka",
+    "created_at": "2026-09-20T09:38:38.490Z",
+    "updated_at": "2026-09-20T09:38:38.490Z",
+    "is_active": true,
+    "permissions": [
+      "create_animal",
+      "view_own_animals",
+      "update_own_animals"
+    ]
+  },
+  {
+    "id": "GamMgm2ywBNqfcw2F5PX5",
+    "name": "kim",
+    "email": "kim@jk",
+    "phone": "8488485858585",
+    "role": "user",
+    "password_hash": "$2a$10$GMuRNITF3l5ZMkyoOJHVVOvjQED6t/l78170hGlXJ7Uus3PisoCfa",
+    "created_at": "2026-09-20T17:24:58.023Z",
+    "is_active": true,
+    "permissions": [
+      "create_animal",
+      "view_own_animals",
+      "update_own_animals"
+    ],
+    "updated_at": "2026-09-20T17:25:13.117Z"
   }
 ]

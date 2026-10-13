@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import Layout from '../components/Layout.jsx'
-import { useMemo } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import ErrorBanner from '../components/ErrorBanner.jsx'
 import LoadingSpinner from '../components/LoadingSpinner.jsx'
@@ -13,6 +13,111 @@ export default function Records() {
   const [breed, setBreed] = useState('')
   const [loc, setLoc] = useState('')
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const [verificationModal, setVerificationModal] = useState(null)
+  const [verifyingId, setVerifyingId] = useState(null)
+  const [selectedAnimal, setSelectedAnimal] = useState(null)
+  const [editForm, setEditForm] = useState({ healthStatus: '', vaccinationStatus: '', weight: '', ownerName: '', location: '' })
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [editMessage, setEditMessage] = useState('')
+  const [deletingId, setDeletingId] = useState(null)
+
+  const openAnimalModal = (animal) => {
+    setSelectedAnimal(animal)
+    setEditForm({
+      healthStatus: animal.healthStatus || animal.health_status || 'healthy',
+      vaccinationStatus: animal.vaccinationStatus || animal.vaccination_status || 'unknown',
+      weight: animal.weight !== null && animal.weight !== undefined ? animal.weight : '',
+      ownerName: animal.ownerName || animal.owner_name || '',
+      location: animal.location || ''
+    })
+    setEditMessage('')
+  }
+
+  const saveAnimalUpdates = async () => {
+    if (!selectedAnimal) return
+    setSavingEdit(true)
+    setEditMessage('')
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`/api/animals/${encodeURIComponent(selectedAnimal.id)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(editForm)
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setEditMessage('✅ Record updated successfully!')
+        setItems(prev => prev.map(a => a.id === selectedAnimal.id ? { ...a, ...data } : a))
+        setSelectedAnimal(prev => ({ ...prev, ...data }))
+        setTimeout(() => setEditMessage(''), 3000)
+      } else {
+        setEditMessage(`❌ ${data.error || 'Failed to update record'}`)
+      }
+    } catch (err) {
+      setEditMessage(`❌ Error: ${err.message}`)
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const deleteAnimalRecord = async (animalId) => {
+    if (!window.confirm('Are you sure you want to delete this animal record? This action will be cryptographically audited.')) {
+      return
+    }
+    setDeletingId(animalId)
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`/api/animals/${encodeURIComponent(animalId)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setItems(prev => prev.filter(a => a.id !== animalId))
+        if (selectedAnimal && selectedAnimal.id === animalId) {
+          setSelectedAnimal(null)
+        }
+        alert('Animal record deleted successfully.')
+      } else {
+        alert(data.error || 'Failed to delete animal record')
+      }
+    } catch (err) {
+      alert('Delete error: ' + err.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const downloadQRCode = (animalId) => {
+    const canvas = document.getElementById(`modal-qr-${animalId}`)
+    if (!canvas) return
+    const pngUrl = canvas.toDataURL('image/png')
+    const downloadLink = document.createElement('a')
+    downloadLink.href = pngUrl
+    downloadLink.download = `pashuvision-animal-${animalId}-qr.png`
+    document.body.appendChild(downloadLink)
+    downloadLink.click()
+    document.body.removeChild(downloadLink)
+  }
+
+  const verifyRecord = async (animalId) => {
+    setVerifyingId(animalId)
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`/api/blockchain/animal/${encodeURIComponent(animalId)}/verify`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await res.json()
+      setVerificationModal(data)
+    } catch (err) {
+      alert('Verification request failed: ' + err.message)
+    } finally {
+      setVerifyingId(null)
+    }
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -22,19 +127,20 @@ export default function Records() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Helper function to format age
+  // Helper function to format age (normalized)
   const formatAge = (ageMonths) => {
-    if (!ageMonths) return '—'
-    const years = Math.floor(ageMonths / 12)
-    const months = ageMonths % 12
-    if (years === 0) return `${months} months`
-    if (months === 0) return `${years} years`
-    return `${years} years ${months} months`
+    if (ageMonths === null || ageMonths === undefined || ageMonths === '') return '—'
+    const num = Number(ageMonths)
+    if (isNaN(num) || num <= 0) return '—'
+    const years = Math.floor(num / 12)
+    const months = num % 12
+    if (years === 0) return `${months} ${months === 1 ? 'month' : 'months'}`
+    if (months === 0) return `${years} ${years === 1 ? 'year' : 'years'}`
+    return `${years} ${years === 1 ? 'year' : 'years'} ${months} ${months === 1 ? 'month' : 'months'}`
   }
 
   useEffect(() => {
     loadRecords()
-    // loadUsers() - no longer needed, user names come from API
   }, [])
 
   const loadRecords = async () => {
@@ -50,8 +156,8 @@ export default function Records() {
     
     try {
       const res = await fetch('/api/animals', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+        headers: { Authorization: `Bearer ${token}` },
+      })
       
       const data = await res.json().catch(() => ({}))
       
@@ -59,10 +165,39 @@ export default function Records() {
         throw new Error(data.error || `Failed to load records (${res.status})`)
       }
       
-      // Ensure data is an array
       const recordsArray = Array.isArray(data) ? data : []
       console.log(`📊 Loaded ${recordsArray.length} records from API`)
       setItems(recordsArray)
+
+      // Handle ?id=... query parameter from QR scanner or links
+      const urlParams = new URLSearchParams(window.location.search)
+      const targetId = urlParams.get('id')
+      if (targetId) {
+        const found = recordsArray.find(a => String(a.id) === String(targetId))
+        if (found) {
+          openAnimalModal(found)
+        } else {
+          // Direct fetch if not in the recent list
+          fetch(`/api/animals/${encodeURIComponent(targetId)}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+            .then(r => r.json().then(d => ({ status: r.status, data: d })))
+            .then(({ status, data: animalData }) => {
+              if (status === 200 && animalData.id) {
+                openAnimalModal(animalData)
+              } else if (status === 404) {
+                setError(`Animal record not found (404): Animal with ID '${targetId}' was not found or has been deleted.`)
+              } else if (status === 403) {
+                setError(`Access restricted (403): You do not have permission to view animal '${targetId}'.`)
+              } else {
+                setError(animalData.error || `Could not find animal '${targetId}'.`)
+              }
+            })
+            .catch(err => {
+              setError(`Network error looking up animal '${targetId}': ${err.message}`)
+            })
+        }
+      }
     } catch (err) {
       const errorMsg = err.message || 'Failed to load records'
       setError(errorMsg)
@@ -114,16 +249,77 @@ export default function Records() {
     URL.revokeObjectURL(url)
   }
 
+  // Unique breeds and locations for compact filter dropdowns
+  const uniqueBreeds = useMemo(() => {
+    const set = new Set()
+    items.forEach(it => {
+      const b = it.predictedBreed || it.breed
+      if (b && typeof b === 'string' && b.trim()) set.add(b.trim())
+    })
+    return Array.from(set).sort()
+  }, [items])
+
+  const uniqueLocations = useMemo(() => {
+    const set = new Set()
+    items.forEach(it => {
+      if (it.location && typeof it.location === 'string' && it.location.trim()) set.add(it.location.trim())
+    })
+    return Array.from(set).sort()
+  }, [items])
+
+  const hasFilters = Boolean(q || breed || loc)
+
+  const resetFilters = () => {
+    setQ('')
+    setBreed('')
+    setLoc('')
+  }
+
+  const currentUser = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null')
+    } catch {
+      return null
+    }
+  }, [])
+
+  const canModerate = currentUser && currentUser.role === 'admin'
+  const checkCanEdit = (record) => {
+    if (!currentUser) return false
+    if (currentUser.role === 'admin') return true
+    return currentUser.role === 'user' && (record.createdBy === currentUser.id || !record.createdBy)
+  }
+
+  const handleModerate = async (animalId, action) => {
+    const token = localStorage.getItem('token')
+    try {
+      const r = await fetch(`/api/animals/${encodeURIComponent(animalId)}/${action}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await r.json().catch(() => ({}))
+      if (!r.ok) {
+        throw new Error(data.error || `Action failed (${r.status})`)
+      }
+      const updated = data.animal || data
+      setItems(prev => prev.map(x => x.id === updated.id ? updated : x))
+      alert(`✅ Record ${action === 'approve' ? 'approved' : 'rejected'} successfully`)
+    } catch (e) {
+      alert(`❌ ${e.message || 'Action failed'}`)
+      console.error('Action error:', e)
+    }
+  }
+
   return (
     <Layout>
       <div className="container">
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h1 style={{ margin: 0 }}>📋 Animal Records</h1>
+          <h1 style={{ margin: 0, color: '#172033' }}>📋 Animal Records</h1>
           <button 
             className="btn secondary" 
             onClick={loadRecords}
             disabled={loading}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#FFFFFF', color: '#172033', border: '1px solid #CBD5E1' }}
           >
             🔄 {loading ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -132,14 +328,14 @@ export default function Records() {
         <ErrorBanner error={error} onDismiss={() => setError('')} />
         
         {loading && <LoadingSpinner message="Loading records..." />}
-        <div className="card" style={{ marginBottom: 12 }}>
+        <div className="card" style={{ marginBottom: 12, background: '#FFFFFF', border: '1px solid #E2E8F0' }}>
           <div className="grid" style={{ 
             gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr',
             gap: '10px'
           }}>
-            <input className="input" placeholder="Search" value={q} onChange={e => setQ(e.target.value)} style={{ fontSize: isMobile ? '16px' : '14px', padding: isMobile ? '12px' : '8px' }} />
-            <input className="input" placeholder="Filter by breed" value={breed} onChange={e => setBreed(e.target.value)} style={{ fontSize: isMobile ? '16px' : '14px', padding: isMobile ? '12px' : '8px' }} />
-            <input className="input" placeholder="Filter by location" value={loc} onChange={e => setLoc(e.target.value)} style={{ fontSize: isMobile ? '16px' : '14px', padding: isMobile ? '12px' : '8px' }} />
+            <input className="input" placeholder="Search" value={q} onChange={e => setQ(e.target.value)} style={{ fontSize: isMobile ? '16px' : '14px', padding: isMobile ? '12px' : '8px', background: '#FFFFFF', color: '#172033', border: '1px solid #CBD5E1' }} />
+            <input className="input" placeholder="Filter by breed" value={breed} onChange={e => setBreed(e.target.value)} style={{ fontSize: isMobile ? '16px' : '14px', padding: isMobile ? '12px' : '8px', background: '#FFFFFF', color: '#172033', border: '1px solid #CBD5E1' }} />
+            <input className="input" placeholder="Filter by location" value={loc} onChange={e => setLoc(e.target.value)} style={{ fontSize: isMobile ? '16px' : '14px', padding: isMobile ? '12px' : '8px', background: '#FFFFFF', color: '#172033', border: '1px solid #CBD5E1' }} />
           </div>
           <div className="row" style={{ marginTop: 10, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
             <button className="btn" onClick={exportCsv} style={{ 
@@ -155,7 +351,9 @@ export default function Records() {
           <div className="card" style={{ 
             overflowX: 'auto',
             WebkitOverflowScrolling: 'touch',
-            msOverflowStyle: '-ms-autohiding-scrollbar'
+            msOverflowStyle: '-ms-autohiding-scrollbar',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0'
           }}>
             <table style={{ 
               width: '100%', 
@@ -164,16 +362,16 @@ export default function Records() {
               fontSize: window.innerWidth <= 1024 ? '12px' : '14px'
             }}>
             <thead>
-              <tr style={{ background: 'var(--color-bg-secondary)' }}>
-                <th style={{ width: '60px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Sr No</th>
-                <th style={{ width: '120px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Date</th>
-                <th style={{ width: '150px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Owner</th>
-                <th style={{ width: '150px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Scanned By</th>
-                <th style={{ width: '200px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Location</th>
-                <th style={{ width: '150px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Breed</th>
-                <th style={{ width: '100px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Age</th>
-                <th style={{ width: '100px', padding: '8px', textAlign: 'left', fontWeight: 'bold' }}>Status</th>
-                <th style={{ width: '250px', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>Actions</th>
+              <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                <th style={{ width: '60px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Sr No</th>
+                <th style={{ width: '120px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Date</th>
+                <th style={{ width: '150px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Owner</th>
+                <th style={{ width: '150px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Scanned By</th>
+                <th style={{ width: '200px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Location</th>
+                <th style={{ width: '150px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Breed</th>
+                <th style={{ width: '100px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Age</th>
+                <th style={{ width: '100px', padding: '8px', textAlign: 'left', fontWeight: 'bold', color: '#172033' }}>Status</th>
+                <th style={{ width: '250px', padding: '8px', textAlign: 'right', fontWeight: 'bold', color: '#172033' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -181,8 +379,6 @@ export default function Records() {
             {filtered.map((it, index) => {
                   const user = JSON.parse(localStorage.getItem('user') || 'null')
                   const canModerate = user && user.role === 'admin'
-                  // Users can edit their own records OR records with null created_by (legacy records)
-                  // user.id is the user ID from localStorage, it.createdBy is the user who created the record
                   const canEdit = user && (user.role === 'admin' || (user.role === 'user' && (it.createdBy === user.id || !it.createdBy)))
                   const token = localStorage.getItem('token')
               
@@ -208,258 +404,41 @@ export default function Records() {
                     }
                   }
               
-              const deleteRecord = async () => {
-                if (!confirm('Are you sure you want to delete this record?')) return
-                
-                try {
-                  const r = await fetch(`/api/animals/${it.id}`, { 
-                    method: 'DELETE', 
-                    headers: { Authorization: `Bearer ${token}` } 
-                  })
-                  
-                  const data = await r.json().catch(() => ({}))
-                  
-                  if (!r.ok) {
-                    throw new Error(data.error || `Delete failed (${r.status})`)
-                  }
-                  
-                  setItems(prev => prev.filter(x => x.id !== it.id))
-                  alert('✅ Record deleted successfully')
-                } catch (e) {
-                  alert(`❌ ${e.message || 'Delete failed'}`)
-                  console.error('Delete error:', e)
-                }
-              }
-              
-              const editRecord = () => {
-                // Get user role to determine which fields to show
-                const user = JSON.parse(localStorage.getItem('user') || '{}')
-                const isAdmin = user && user.role === 'admin'
-                
-                // Open edit modal
-                const editModal = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')
-                editModal.document.write(`
-                  <html>
-                    <head>
-                      <title>Edit Record - ${it.id}</title>
-                      <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-                        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                        .form-group { margin-bottom: 15px; }
-                        label { display: block; margin-bottom: 5px; font-weight: bold; }
-                        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-                        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
-                        .btn-primary { background: #007bff; color: white; }
-                        .btn-secondary { background: #6c757d; color: white; }
-                        .btn:hover { opacity: 0.8; }
-                        .readonly { background-color: #f5f5f5; color: #666; cursor: not-allowed; }
-                        .info-text { font-size: 12px; color: #666; margin-top: 5px; font-style: italic; }
-                      </style>
-                    </head>
-                    <body>
-                      <div class="container">
-                        <h2>Edit Animal Record</h2>
-                        ${!isAdmin ? '<p style="color: #666; font-size: 14px; margin-bottom: 20px;">Note: As a regular user, you can only edit Owner Name and Location fields.</p>' : ''}
-                        <form id="editForm">
-                          <div class="form-group">
-                            <label>Owner Name: *</label>
-                            <input type="text" id="ownerName" value="${it.ownerName || ''}" required>
-                          </div>
-                          <div class="form-group">
-                            <label>Location: *</label>
-                            <input type="text" id="location" value="${it.location || ''}" required>
-                          </div>
-                          <div class="form-group">
-                            <label>Weight (kg):</label>
-                            <input type="number" id="weight" value="${it.weight || ''}" min="0" step="0.1">
-                          </div>
-                          <div class="form-group">
-                            <label>Health Status:</label>
-                            <select id="healthStatus">
-                              <option value="healthy" ${(it.healthStatus || 'healthy') === 'healthy' ? 'selected' : ''}>Healthy</option>
-                              <option value="sick" ${it.healthStatus === 'sick' ? 'selected' : ''}>Sick</option>
-                              <option value="injured" ${it.healthStatus === 'injured' ? 'selected' : ''}>Injured</option>
-                              <option value="pregnant" ${it.healthStatus === 'pregnant' ? 'selected' : ''}>Pregnant</option>
-                            </select>
-                          </div>
-                          <div class="form-group">
-                            <label>Vaccination Status:</label>
-                            <select id="vaccinationStatus">
-                              <option value="unknown" ${(it.vaccinationStatus || 'unknown') === 'unknown' ? 'selected' : ''}>Unknown</option>
-                              <option value="up_to_date" ${it.vaccinationStatus === 'up_to_date' ? 'selected' : ''}>Up to Date</option>
-                              <option value="due" ${it.vaccinationStatus === 'due' ? 'selected' : ''}>Due</option>
-                              <option value="overdue" ${it.vaccinationStatus === 'overdue' ? 'selected' : ''}>Overdue</option>
-                            </select>
-                          </div>
-                          ${isAdmin ? `
-                          <div class="form-group">
-                            <label>Breed:</label>
-                            <input type="text" id="breed" value="${it.predictedBreed || ''}">
-                          </div>
-                          <div class="form-group">
-                            <label>Age (months):</label>
-                            <input type="number" id="ageMonths" value="${it.ageMonths || ''}" min="1" max="600">
-                          </div>
-                          <div class="form-group">
-                            <label>Gender:</label>
-                            <select id="gender">
-                              <option value="">Select Gender</option>
-                              <option value="male" ${it.gender === 'male' ? 'selected' : ''}>Male</option>
-                              <option value="female" ${it.gender === 'female' ? 'selected' : ''}>Female</option>
-                            </select>
-                          </div>
-                          <div class="form-group">
-                            <label>Status:</label>
-                            <select id="status">
-                              <option value="pending" ${it.status === 'pending' ? 'selected' : ''}>Pending</option>
-                              <option value="approved" ${it.status === 'approved' ? 'selected' : ''}>Approved</option>
-                              <option value="rejected" ${it.status === 'rejected' ? 'selected' : ''}>Rejected</option>
-                            </select>
-                          </div>
-                          ` : `
-                          <div class="form-group">
-                            <label>Breed:</label>
-                            <input type="text" id="breed" value="${it.predictedBreed || ''}" class="readonly" readonly>
-                            <div class="info-text">Only admins can edit this field</div>
-                          </div>
-                          <div class="form-group">
-                            <label>Age (months):</label>
-                            <input type="number" id="ageMonths" value="${it.ageMonths || ''}" class="readonly" readonly>
-                            <div class="info-text">Only admins can edit this field</div>
-                          </div>
-                          <div class="form-group">
-                            <label>Gender:</label>
-                            <input type="text" id="gender" value="${it.gender ? (it.gender.charAt(0).toUpperCase() + it.gender.slice(1)) : 'Not specified'}" class="readonly" readonly>
-                            <div class="info-text">Only admins can edit this field</div>
-                          </div>
-                          <div class="form-group">
-                            <label>Status:</label>
-                            <input type="text" id="status" value="${it.status || 'pending'}" class="readonly" readonly>
-                            <div class="info-text">Only admins can edit this field</div>
-                          </div>
-                          `}
-                          <div class="form-group">
-                            <button type="button" class="btn btn-primary" onclick="saveRecord()">Save Changes</button>
-                            <button type="button" class="btn btn-secondary" onclick="window.close()">Cancel</button>
-                          </div>
-                        </form>
-                      </div>
-                      <script>
-                        const isAdmin = ${isAdmin};
-                        
-                        function saveRecord() {
-                          const data = {
-                            ownerName: document.getElementById('ownerName').value,
-                            location: document.getElementById('location').value
-                          };
-                          
-                          // All users (admin and regular) can update health status, vaccination status, and weight
-                          const weightInput = document.getElementById('weight');
-                          const healthStatusInput = document.getElementById('healthStatus');
-                          const vaccinationStatusInput = document.getElementById('vaccinationStatus');
-                          
-                          if (weightInput && weightInput.value) {
-                            data.weight = parseFloat(weightInput.value) || null;
-                          }
-                          if (healthStatusInput && healthStatusInput.value) {
-                            data.healthStatus = healthStatusInput.value;
-                          }
-                          if (vaccinationStatusInput && vaccinationStatusInput.value) {
-                            data.vaccinationStatus = vaccinationStatusInput.value;
-                          }
-                          
-                          // Only admins can update other fields
-                          if (isAdmin) {
-                            const breedInput = document.getElementById('breed');
-                            const ageInput = document.getElementById('ageMonths');
-                            const genderInput = document.getElementById('gender');
-                            const statusInput = document.getElementById('status');
-                            
-                            if (breedInput && !breedInput.readOnly) {
-                              data.predictedBreed = breedInput.value;
-                            }
-                            if (ageInput && !ageInput.readOnly && ageInput.value) {
-                              data.ageMonths = parseInt(ageInput.value);
-                            }
-                            if (genderInput && !genderInput.readOnly && genderInput.value) {
-                              data.gender = genderInput.value;
-                            }
-                            if (statusInput && !statusInput.readOnly) {
-                              data.status = statusInput.value;
-                            }
-                          }
-                          
-                          fetch(\`/api/animals/\${it.id}\`, {
-                            method: 'PUT',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': 'Bearer ' + localStorage.getItem('token')
-                            },
-                            body: JSON.stringify(data)
-                          })
-                          .then(async response => {
-                            if (!response.ok) {
-                              const errorText = await response.text();
-                              let errorMsg = 'Failed to update record';
-                              try {
-                                const errorData = JSON.parse(errorText);
-                                errorMsg = errorData.error || errorMsg;
-                              } catch {
-                                errorMsg = errorText || errorMsg;
-                              }
-                              throw new Error(errorMsg);
-                            }
-                            return response.json();
-                          })
-                          .then(result => {
-                            alert('✅ Record updated successfully!');
-                            window.close();
-                            window.opener.location.reload();
-                          })
-                          .catch(error => {
-                            alert('❌ Error updating record: ' + error.message);
-                          });
-                        }
-                      </script>
-                    </body>
-                  </html>
-                `)
-              }
-              
                   return (
                 <tr key={it.id} style={{ 
-                  backgroundColor: index % 2 === 0 ? 'transparent' : 'var(--color-bg-secondary)'
+                  backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#F8FAFC',
+                  borderBottom: '1px solid #F1F5F9'
                 }}>
-                  <td style={{ width: '60px', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#666' }}>
+                  <td style={{ width: '60px', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#666666' }}>
                     {index + 1}
                   </td>
-                  <td style={{ width: '120px', padding: '8px', fontSize: '12px' }}>
+                  <td style={{ width: '120px', padding: '8px', fontSize: '12px', color: '#334155' }}>
                     {it.capturedAt ? new Date(it.capturedAt).toLocaleDateString() : '—'}
                   </td>
-                  <td style={{ width: '150px', padding: '8px', fontSize: '12px' }}>
+                  <td style={{ width: '150px', padding: '8px', fontSize: '12px', fontWeight: 'bold', color: '#172033' }}>
                     {it.ownerName || '—'}
                   </td>
                   <td style={{ width: '150px', padding: '8px', fontSize: '12px' }}>
                     {it.createdBy ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{ fontWeight: '500', color: '#333' }}>
+                        <span style={{ fontWeight: '500', color: '#172033' }}>
                           {getUserName(it) || 'Unknown User'}
                         </span>
-                        <span style={{ fontSize: '11px', color: '#666' }}>
+                        <span style={{ fontSize: '11px', color: '#666666' }}>
                           ID: {it.createdBy.slice(0, 8)}
                         </span>
                       </div>
                     ) : (
-                      <span style={{ color: '#999' }}>N/A</span>
+                      <span style={{ color: '#999999' }}>N/A</span>
                     )}
                   </td>
-                  <td style={{ width: '200px', padding: '8px', fontSize: '12px' }}>
+                  <td style={{ width: '200px', padding: '8px', fontSize: '12px', color: '#5B6472' }}>
                     {it.location || '—'}
                   </td>
-                  <td style={{ width: '150px', padding: '8px', fontSize: '12px' }}>
+                  <td style={{ width: '150px', padding: '8px', fontSize: '12px', color: '#172033' }}>
                     {it.predictedBreed || '—'}
                   </td>
-                  <td style={{ width: '100px', padding: '8px', fontSize: '12px' }}>
+                  <td style={{ width: '100px', padding: '8px', fontSize: '12px', color: '#334155' }}>
                     {formatAge(it.ageMonths)}
                   </td>
                   <td style={{ width: '100px', padding: '8px' }}>
@@ -497,267 +476,8 @@ export default function Records() {
                           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                           transition: 'all 0.2s ease'
                         }}
-                        onClick={() => {
-                          const formatHealthStatus = (status) => {
-                            if (!status) return 'Not specified'
-                            return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')
-                          }
-                          
-                          const formatVaccinationStatus = (status) => {
-                            if (!status) return 'Not specified'
-                            return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')
-                          }
-                          
-                          // Create a styled modal popup
-                          const detailsModal = window.open('', '_blank', 'width=700,height=700,scrollbars=yes,resizable=yes')
-                          detailsModal.document.write(`
-                            <html>
-                              <head>
-                                <title>Record Details - ${it.id}</title>
-                                <style>
-                                  * { margin: 0; padding: 0; box-sizing: border-box; }
-                                  body { 
-                                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                    padding: 20px;
-                                    min-height: 100vh;
-                                  }
-                                  .modal-container {
-                                    max-width: 650px;
-                                    margin: 0 auto;
-                                    background: white;
-                                    border-radius: 16px;
-                                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                                    overflow: hidden;
-                                  }
-                                  .modal-header {
-                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                    color: white;
-                                    padding: 24px 28px;
-                                    font-size: 24px;
-                                    font-weight: 600;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: space-between;
-                                  }
-                                  .modal-header h2 {
-                                    font-size: 24px;
-                                    font-weight: 600;
-                                    margin: 0;
-                                  }
-                                  .close-btn {
-                                    background: rgba(255,255,255,0.2);
-                                    border: none;
-                                    color: white;
-                                    width: 36px;
-                                    height: 36px;
-                                    border-radius: 50%;
-                                    cursor: pointer;
-                                    font-size: 20px;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    transition: all 0.2s;
-                                  }
-                                  .close-btn:hover {
-                                    background: rgba(255,255,255,0.3);
-                                    transform: scale(1.1);
-                                  }
-                                  .modal-body {
-                                    padding: 28px;
-                                    max-height: 500px;
-                                    overflow-y: auto;
-                                  }
-                                  .detail-row {
-                                    display: flex;
-                                    padding: 16px 0;
-                                    border-bottom: 1px solid #e9ecef;
-                                    align-items: flex-start;
-                                  }
-                                  .detail-row:last-child {
-                                    border-bottom: none;
-                                  }
-                                  .detail-label {
-                                    font-weight: 600;
-                                    color: #495057;
-                                    min-width: 160px;
-                                    font-size: 14px;
-                                    text-transform: uppercase;
-                                    letter-spacing: 0.5px;
-                                  }
-                                  .detail-value {
-                                    color: #212529;
-                                    font-size: 15px;
-                                    flex: 1;
-                                    word-break: break-word;
-                                  }
-                                  .badge {
-                                    display: inline-block;
-                                    padding: 4px 12px;
-                                    border-radius: 12px;
-                                    font-size: 12px;
-                                    font-weight: 600;
-                                    text-transform: uppercase;
-                                    letter-spacing: 0.5px;
-                                  }
-                                  .badge-approved {
-                                    background: #d4edda;
-                                    color: #155724;
-                                  }
-                                  .badge-pending {
-                                    background: #fff3cd;
-                                    color: #856404;
-                                  }
-                                  .badge-rejected {
-                                    background: #f8d7da;
-                                    color: #721c24;
-                                  }
-                                  .badge-healthy {
-                                    background: #d1ecf1;
-                                    color: #0c5460;
-                                  }
-                                  .badge-sick {
-                                    background: #f8d7da;
-                                    color: #721c24;
-                                  }
-                                  .badge-injured {
-                                    background: #fff3cd;
-                                    color: #856404;
-                                  }
-                                  .badge-pregnant {
-                                    background: #e2e3f5;
-                                    color: #383d41;
-                                  }
-                                  .badge-up-to-date {
-                                    background: #d4edda;
-                                    color: #155724;
-                                  }
-                                  .badge-due {
-                                    background: #fff3cd;
-                                    color: #856404;
-                                  }
-                                  .badge-overdue {
-                                    background: #f8d7da;
-                                    color: #721c24;
-                                  }
-                                  .modal-footer {
-                                    padding: 20px 28px;
-                                    background: #f8f9fa;
-                                    border-top: 1px solid #e9ecef;
-                                    text-align: right;
-                                  }
-                                  .btn-close {
-                                    background: #667eea;
-                                    color: white;
-                                    border: none;
-                                    padding: 10px 24px;
-                                    border-radius: 8px;
-                                    font-size: 14px;
-                                    font-weight: 600;
-                                    cursor: pointer;
-                                    transition: all 0.2s;
-                                  }
-                                  .btn-close:hover {
-                                    background: #5568d3;
-                                    transform: translateY(-1px);
-                                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                                  }
-                                  ::-webkit-scrollbar {
-                                    width: 8px;
-                                  }
-                                  ::-webkit-scrollbar-track {
-                                    background: #f1f1f1;
-                                  }
-                                  ::-webkit-scrollbar-thumb {
-                                    background: #888;
-                                    border-radius: 4px;
-                                  }
-                                  ::-webkit-scrollbar-thumb:hover {
-                                    background: #555;
-                                  }
-                                </style>
-                              </head>
-                              <body>
-                                <div class="modal-container">
-                                  <div class="modal-header">
-                                    <h2>📋 Record Details</h2>
-                                    <button class="close-btn" onclick="window.close()">×</button>
-                                  </div>
-                                  <div class="modal-body">
-                                    <div class="detail-row">
-                                      <div class="detail-label">ID</div>
-                                      <div class="detail-value">${it.id}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Owner</div>
-                                      <div class="detail-value">${it.ownerName || 'N/A'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Location</div>
-                                      <div class="detail-value">${it.location || 'N/A'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Breed</div>
-                                      <div class="detail-value">${it.predictedBreed || 'Not predicted'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Age</div>
-                                      <div class="detail-value">${formatAge(it.ageMonths)}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Gender</div>
-                                      <div class="detail-value">${it.gender ? (it.gender.charAt(0).toUpperCase() + it.gender.slice(1)) : 'Not specified'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Weight</div>
-                                      <div class="detail-value">${it.weight ? `${it.weight} kg` : 'Not specified'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Health Status</div>
-                                      <div class="detail-value">
-                                        <span class="badge badge-${(it.healthStatus || 'healthy').toLowerCase()}">
-                                          ${formatHealthStatus(it.healthStatus)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Vaccination Status</div>
-                                      <div class="detail-value">
-                                        <span class="badge badge-${(it.vaccinationStatus || 'unknown').replace(/_/g, '-').toLowerCase()}">
-                                          ${formatVaccinationStatus(it.vaccinationStatus)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Status</div>
-                                      <div class="detail-value">
-                                        <span class="badge badge-${(it.status || 'pending').toLowerCase()}">
-                                          ${(it.status || 'pending').charAt(0).toUpperCase() + (it.status || 'pending').slice(1)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">User ID</div>
-                                      <div class="detail-value">${it.createdBy ? it.createdBy.slice(0, 8) + '...' : 'N/A'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">GPS Coordinates</div>
-                                      <div class="detail-value">${it.gps ? `${it.gps.lat}, ${it.gps.lng}` : 'Not available'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                      <div class="detail-label">Captured At</div>
-                                      <div class="detail-value">${it.capturedAt ? new Date(it.capturedAt).toLocaleString() : 'Not available'}</div>
-                                    </div>
-                                  </div>
-                                  <div class="modal-footer">
-                                    <button class="btn-close" onclick="window.close()">Close</button>
-                                  </div>
-                                </div>
-                              </body>
-                            </html>
-                          `)
-                        }}
-                        title="View Details"
+                        onClick={() => openAnimalModal(it)}
+                        title="View & Edit Details"
                       >
                         👁️
                       </button>
@@ -781,202 +501,35 @@ export default function Records() {
                           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                           transition: 'all 0.2s ease'
                         }}
-                        onClick={() => {
-                          // Open QR code scanner in new window
-                          const qrWindow = window.open('', '_blank', 'width=500,height=600')
-                          qrWindow.document.write(`
-                            <html>
-                              <head>
-                                <title>QR Code Scanner - ${it.id}</title>
-                                <style>
-                                  body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; text-align: center; }
-                                  .container { max-width: 450px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-                                  .scanner { margin: 20px 0; }
-                                  .result { margin: 20px 0; padding: 10px; background: #e8f5e8; border-radius: 4px; }
-                                  .btn { 
-                                    padding: 12px 24px; 
-                                    margin: 8px; 
-                                    border: 2px solid; 
-                                    border-radius: 8px; 
-                                    cursor: pointer; 
-                                    font-size: 14px;
-                                    font-weight: bold;
-                                    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-                                    transition: all 0.2s ease;
-                                    min-width: 120px;
-                                    height: 44px;
-                                    display: inline-flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                  }
-                                  .btn:hover { 
-                                    transform: translateY(-2px);
-                                    box-shadow: 0 5px 12px rgba(0,0,0,0.2);
-                                  }
-                                  .btn-primary { background: #007bff; color: white; border-color: #007bff; }
-                                  .btn-success { background: #28a745; color: white; border-color: #28a745; }
-                                  .btn-danger { background: #dc3545; color: white; border-color: #dc3545; }
-                                  #video { width: 100%; max-width: 350px; border: 3px solid #007bff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-                                  #qrcode { margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef; max-width: 400px; }
-                                  h3 { color: #333; margin-bottom: 25px; font-size: 24px; }
-                                  p { color: #666; margin: 10px 0; font-size: 14px; }
-                                </style>
-                              </head>
-                              <body>
-                                <div class="container">
-                                  <h3>QR Code Scanner</h3>
-                                  <div class="scanner">
-                                    <video id="video" autoplay></video>
-                                    <div id="result" class="result" style="display: none;"></div>
-                    </div>
-                                  <div id="qrcode"></div>
-                                  <p><strong>Record ID:</strong> ${it.id}</p>
-                                  <p><strong>Owner:</strong> ${it.ownerName}</p>
-                                  <button class="btn btn-success" onclick="startScanning()">Start Scanning</button>
-                                  <button class="btn btn-danger" onclick="stopScanning()">Stop Scanning</button>
-                                  <button class="btn btn-primary" onclick="generateQR()">Generate QR Code</button>
-              </div>
-                                
-                                <script src="https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.umd.min.js"></script>
-                                <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-                                <script>
-                                  // Fallback QR code generation if main library fails
-                                  if (typeof QRCode === 'undefined') {
-                                    window.QRCode = {
-                                      toCanvas: function(canvas, text, options, callback) {
-                                        try {
-                                          const qr = qrcode(0, 'M');
-                                          qr.addData(text);
-                                          qr.make();
-                                          const ctx = canvas.getContext('2d');
-                                          const size = options.width || 200;
-                                          canvas.width = size;
-                                          canvas.height = size;
-                                          const cellSize = size / qr.getModuleCount();
-                                          for (let row = 0; row < qr.getModuleCount(); row++) {
-                                            for (let col = 0; col < qr.getModuleCount(); col++) {
-                                              ctx.fillStyle = qr.isDark(row, col) ? '#000000' : '#FFFFFF';
-                                              ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-                                            }
-                                          }
-                                          if (callback) callback(null);
-                                        } catch (e) {
-                                          if (callback) callback(e);
-                                        }
-                                      }
-                                    };
-                                  }
-                                </script>
-                                <script>
-                                  let qrScanner = null;
-                                  
-                                  function startScanning() {
-                                    const video = document.getElementById('video');
-                                    const result = document.getElementById('result');
-                                    
-                                    qrScanner = new QrScanner(video, (result) => {
-                                      document.getElementById('result').innerHTML = 'Scanned: ' + result;
-                                      document.getElementById('result').style.display = 'block';
-                                    });
-                                    
-                                    qrScanner.start();
-                                  }
-                                  
-                                  function stopScanning() {
-                                    if (qrScanner) {
-                                      qrScanner.stop();
-                                      qrScanner = null;
-                                    }
-                                  }
-                                  
-                                  function generateQR() {
-                                    const qrDiv = document.getElementById('qrcode');
-                                    qrDiv.innerHTML = '';
-                                    
-                                    // Check if QRCode library is loaded
-                                    if (typeof QRCode === 'undefined') {
-                                      qrDiv.innerHTML = '<p style="color: red;">QR Code library not loaded. Please refresh the page.</p>';
-                                      return;
-                                    }
-                                    
-                                    // Create canvas element
-                                    const canvas = document.createElement('canvas');
-                                    qrDiv.appendChild(canvas);
-                                    
-                                    // Create detailed animal information for QR code
-                                    const animalData = {
-                                      id: '${it.id}',
-                                      owner: '${it.ownerName || 'Unknown'}',
-                                      location: '${it.location || 'Unknown'}',
-                                      breed: '${it.predictedBreed || 'Unknown'}',
-                                      age: '${formatAge(it.ageMonths)}',
-                                      status: '${it.status || 'pending'}',
-                                      createdBy: '${it.createdBy || 'N/A'}',
-                                      vaccinated: '${it.vaccinated || 'Unknown'}',
-                                      lastVaccination: '${it.lastVaccination || 'Not recorded'}',
-                                      createdAt: '${it.capturedAt || it.createdAt || 'Unknown'}'
-                                    };
-                                    
-                                    const qrText = JSON.stringify(animalData);
-                                    
-                                    try {
-                                      QRCode.toCanvas(canvas, qrText, {
-                                        width: 250,
-                                        margin: 2,
-                                        color: { 
-                                          dark: '#000000', 
-                                          light: '#FFFFFF' 
-                                        }
-                                      }, function (error) {
-                                        if (error) {
-                                          console.error('QR Code generation error:', error);
-                                          qrDiv.innerHTML = '<p style="color: red;">Error generating QR code: ' + error.message + '</p>';
-                                        } else {
-                                          console.log('QR Code generated successfully');
-                                          // Add detailed labels below the QR code
-                                          const detailsDiv = document.createElement('div');
-                                          detailsDiv.style.marginTop = '15px';
-                                          detailsDiv.style.textAlign = 'left';
-                                          detailsDiv.style.fontSize = '11px';
-                                          detailsDiv.style.color = '#666';
-                                          detailsDiv.style.lineHeight = '1.4';
-                                          
-                                          detailsDiv.innerHTML = \`
-                                            <div style="margin-bottom: 8px;"><strong>Animal ID:</strong> \${animalData.id}</div>
-                                            <div style="margin-bottom: 8px;"><strong>Owner:</strong> \${animalData.owner}</div>
-                                            <div style="margin-bottom: 8px;"><strong>Location:</strong> \${animalData.location}</div>
-                                            <div style="margin-bottom: 8px;"><strong>Breed:</strong> \${animalData.breed}</div>
-                                            <div style="margin-bottom: 8px;"><strong>Age:</strong> \${animalData.age}</div>
-                                            <div style="margin-bottom: 8px;"><strong>Status:</strong> \${animalData.status}</div>
-                                            <div style="margin-bottom: 8px;"><strong>User ID:</strong> \${animalData.createdBy ? animalData.createdBy.slice(0, 8) : 'N/A'}</div>
-                                            <div style="margin-bottom: 8px;"><strong>Vaccinated:</strong> \${animalData.vaccinated}</div>
-                                            <div style="margin-bottom: 8px;"><strong>Last Vaccination:</strong> \${animalData.lastVaccination}</div>
-                                            <div><strong>Created:</strong> \${animalData.createdAt}</div>
-                                          \`;
-                                          
-                                          qrDiv.appendChild(detailsDiv);
-                                        }
-                                      });
-                                    } catch (e) {
-                                      console.error('QR Code generation exception:', e);
-                                      qrDiv.innerHTML = '<p style="color: red;">Exception generating QR code: ' + e.message + '</p>';
-                                    }
-                                  }
-                                  
-                                  // Auto-generate QR code on load with delay to ensure libraries are loaded
-                                  window.onload = function() {
-                                    setTimeout(function() {
-                                      generateQR();
-                                    }, 500);
-                                  };
-                                </script>
-                              </body>
-                            </html>
-                          `)
-                        }}
+                        onClick={() => openAnimalModal(it)}
                         title="View QR Code"
                       >
                         📱
+                      </button>
+                      <button 
+                        className="btn" 
+                        style={{ 
+                          fontSize: '13px', 
+                          padding: '8px 12px', 
+                          minWidth: '36px',
+                          height: '36px',
+                          borderRadius: '6px',
+                          background: '#4f46e5',
+                          color: 'white',
+                          border: '2px solid #4f46e5',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          fontWeight: 'bold',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onClick={() => verifyRecord(it.id)}
+                        title="Verify Cryptographic Integrity"
+                      >
+                        {verifyingId === it.id ? '⏳' : '🛡️'}
                       </button>
                       {canModerate && it.status !== 'approved' && (
                         <>
@@ -1033,60 +586,31 @@ export default function Records() {
                         </>
                       )}
                       {canEdit && (
-                        <>
-                          <button 
-                            className="btn" 
-                            style={{ 
-                              fontSize: '13px', 
-                              padding: '8px 12px', 
-                              minWidth: '36px',
-                              height: '36px',
-                              borderRadius: '6px',
-                              background: '#fd7e14',
-                              color: 'white',
-                              border: '2px solid #fd7e14',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                              fontWeight: 'bold',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onClick={editRecord}
-                            title="Edit Record"
-                          >
-                            ✏️
-                          </button>
-                          <button 
-                            className="btn" 
-                            style={{ 
-                              fontSize: '13px', 
-                              padding: '8px 12px', 
-                              minWidth: '36px',
-                              height: '36px',
-                              borderRadius: '6px',
-                              background: '#6c757d',
-                              color: 'white',
-                              border: '2px solid #6c757d',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                              fontWeight: 'bold',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onClick={deleteRecord}
-                            title="Delete Record"
-                          >
-                            🗑️
-                          </button>
-                        </>
+                        <button 
+                          className="btn" 
+                          style={{ 
+                            fontSize: '13px', 
+                            padding: '8px 12px', 
+                            minWidth: '36px',
+                            height: '36px',
+                            borderRadius: '6px',
+                            background: '#6c757d',
+                            color: 'white',
+                            border: '2px solid #6c757d',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 'bold'
+                          }}
+                          onClick={() => deleteAnimalRecord(it.id)}
+                          disabled={deletingId === it.id}
+                          title="Delete Record"
+                        >
+                          {deletingId === it.id ? '⏳' : '🗑️'}
+                        </button>
                       )}
-            </div>
+                    </div>
                   </td>
                 </tr>
               )
@@ -1121,34 +645,19 @@ export default function Records() {
                 }
               }
               
-              const deleteRecord = async () => {
-                if (!confirm('Are you sure you want to delete this record?')) return
-                try {
-                  const r = await fetch(`/api/animals/${it.id}`, { 
-                    method: 'DELETE', 
-                    headers: { Authorization: `Bearer ${token}` } 
-                  })
-                  const data = await r.json().catch(() => ({}))
-                  if (!r.ok) throw new Error(data.error || `Delete failed (${r.status})`)
-                  setItems(prev => prev.filter(x => x.id !== it.id))
-                  alert('✅ Record deleted successfully')
-                } catch (e) {
-                  alert(`❌ ${e.message || 'Delete failed'}`)
-                }
-              }
-              
               return (
                 <div key={it.id} className="card" style={{ 
                   padding: '16px',
                   marginBottom: '12px',
-                  background: 'var(--glass-bg)',
-                  border: '1px solid var(--glass-border)'
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '12px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>#{index + 1}</div>
-                      <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px' }}>{it.ownerName || '—'}</div>
-                      <div style={{ fontSize: '12px', color: '#666' }}>
+                      <div style={{ fontSize: '12px', color: '#666666', marginBottom: '4px' }}>#{index + 1}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '4px', color: '#172033' }}>{it.ownerName || '—'}</div>
+                      <div style={{ fontSize: '12px', color: '#666666' }}>
                         {it.capturedAt ? new Date(it.capturedAt).toLocaleDateString() : '—'}
                       </div>
                     </div>
@@ -1167,147 +676,57 @@ export default function Records() {
                   
                   <div style={{ display: 'grid', gap: '8px', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12px', color: '#666' }}>Breed:</span>
-                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{it.predictedBreed || '—'}</span>
+                      <span style={{ fontSize: '12px', color: '#666666' }}>Breed:</span>
+                      <span style={{ fontSize: '14px', fontWeight: '500', color: '#172033' }}>{it.predictedBreed || '—'}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12px', color: '#666' }}>Location:</span>
-                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{it.location || '—'}</span>
+                      <span style={{ fontSize: '12px', color: '#666666' }}>Location:</span>
+                      <span style={{ fontSize: '14px', fontWeight: '500', color: '#5B6472' }}>{it.location || '—'}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12px', color: '#666' }}>Age:</span>
-                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{formatAge(it.ageMonths)}</span>
+                      <span style={{ fontSize: '12px', color: '#666666' }}>Age:</span>
+                      <span style={{ fontSize: '14px', fontWeight: '500', color: '#334155' }}>{formatAge(it.ageMonths)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12px', color: '#666' }}>Scanned By:</span>
-                      <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                      <span style={{ fontSize: '12px', color: '#666666' }}>Scanned By:</span>
+                      <span style={{ fontSize: '14px', fontWeight: '500', color: '#172033' }}>
                         {it.createdBy ? (getUserName(it) || `ID: ${it.createdBy.slice(0, 8)}`) : 'N/A'}
                       </span>
                     </div>
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #E2E8F0' }}>
                     <button 
                       className="btn secondary" 
-                      onClick={() => {
-                        const formatHealthStatus = (status) => {
-                          if (!status) return 'Not specified'
-                          return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')
-                        }
-                        const formatVaccinationStatus = (status) => {
-                          if (!status) return 'Not specified'
-                          return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')
-                        }
-                        const detailsModal = window.open('', '_blank', 'width=700,height=700,scrollbars=yes,resizable=yes')
-                        detailsModal.document.write(`
-                          <html>
-                            <head>
-                              <title>Record Details - ${it.id}</title>
-                              <style>
-                                * { margin: 0; padding: 0; box-sizing: border-box; }
-                                body { 
-                                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                  padding: 20px;
-                                  min-height: 100vh;
-                                }
-                                .modal-container {
-                                  max-width: 650px;
-                                  margin: 0 auto;
-                                  background: white;
-                                  border-radius: 16px;
-                                  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                                  overflow: hidden;
-                                }
-                                .modal-header {
-                                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                  color: white;
-                                  padding: 24px 28px;
-                                  font-size: 24px;
-                                  font-weight: 600;
-                                  display: flex;
-                                  align-items: center;
-                                  justify-content: space-between;
-                                }
-                                .close-btn {
-                                  background: rgba(255,255,255,0.2);
-                                  border: none;
-                                  color: white;
-                                  width: 36px;
-                                  height: 36px;
-                                  border-radius: 50%;
-                                  cursor: pointer;
-                                  font-size: 20px;
-                                }
-                                .modal-body {
-                                  padding: 28px;
-                                  max-height: 500px;
-                                  overflow-y: auto;
-                                }
-                                .detail-row {
-                                  display: flex;
-                                  padding: 16px 0;
-                                  border-bottom: 1px solid #e9ecef;
-                                }
-                                .detail-label {
-                                  font-weight: 600;
-                                  color: #495057;
-                                  min-width: 160px;
-                                  font-size: 14px;
-                                }
-                                .detail-value {
-                                  color: #212529;
-                                  font-size: 15px;
-                                  flex: 1;
-                                }
-                              </style>
-                            </head>
-                            <body>
-                              <div class="modal-container">
-                                <div class="modal-header">
-                                  <h2>📋 Record Details</h2>
-                                  <button class="close-btn" onclick="window.close()">×</button>
-                                </div>
-                                <div class="modal-body">
-                                  <div class="detail-row">
-                                    <div class="detail-label">ID</div>
-                                    <div class="detail-value">${it.id}</div>
-                                  </div>
-                                  <div class="detail-row">
-                                    <div class="detail-label">Owner</div>
-                                    <div class="detail-value">${it.ownerName || 'N/A'}</div>
-                                  </div>
-                                  <div class="detail-row">
-                                    <div class="detail-label">Location</div>
-                                    <div class="detail-value">${it.location || 'N/A'}</div>
-                                  </div>
-                                  <div class="detail-row">
-                                    <div class="detail-label">Breed</div>
-                                    <div class="detail-value">${it.predictedBreed || 'Not predicted'}</div>
-                                  </div>
-                                  <div class="detail-row">
-                                    <div class="detail-label">Age</div>
-                                    <div class="detail-value">${formatAge(it.ageMonths)}</div>
-                                  </div>
-                                  <div class="detail-row">
-                                    <div class="detail-label">Status</div>
-                                    <div class="detail-value">${(it.status || 'pending').toUpperCase()}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            </body>
-                          </html>
-                        `)
-                      }}
+                      onClick={() => openAnimalModal(it)}
                       style={{ 
                         flex: 1,
                         minWidth: '80px',
                         fontSize: '12px',
                         padding: '10px',
-                        minHeight: '40px'
+                        minHeight: '40px',
+                        border: '2px solid #007bff',
+                        background: '#ffffff',
+                        color: '#007bff'
                       }}
                     >
-                      👁️ View
+                      👁️ View / QR
+                    </button>
+                    <button 
+                      className="btn" 
+                      onClick={() => verifyRecord(it.id)}
+                      style={{ 
+                        flex: 1,
+                        minWidth: '80px',
+                        fontSize: '12px',
+                        padding: '10px',
+                        minHeight: '40px',
+                        background: '#4f46e5',
+                        color: 'white'
+                      }}
+                      title="Verify Record"
+                    >
+                      {verifyingId === it.id ? '⏳ Checking...' : '🛡️ Verify'}
                     </button>
                     {canModerate && it.status !== 'approved' && (
                       <>
@@ -1347,73 +766,7 @@ export default function Records() {
                       <>
                         <button 
                           className="btn" 
-                          onClick={() => {
-                            const user = JSON.parse(localStorage.getItem('user') || '{}')
-                            const isAdmin = user && user.role === 'admin'
-                            const editModal = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')
-                            editModal.document.write(`
-                              <html>
-                                <head>
-                                  <title>Edit Record - ${it.id}</title>
-                                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                  <style>
-                                    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-                                    .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
-                                    .form-group { margin-bottom: 15px; }
-                                    label { display: block; margin-bottom: 5px; font-weight: bold; }
-                                    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-                                    .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
-                                    .btn-primary { background: #007bff; color: white; }
-                                    .btn-secondary { background: #6c757d; color: white; }
-                                  </style>
-                                </head>
-                                <body>
-                                  <div class="container">
-                                    <h2>Edit Animal Record</h2>
-                                    <form id="editForm">
-                                      <div class="form-group">
-                                        <label>Owner Name: *</label>
-                                        <input type="text" id="ownerName" value="${it.ownerName || ''}" required>
-                                      </div>
-                                      <div class="form-group">
-                                        <label>Location: *</label>
-                                        <input type="text" id="location" value="${it.location || ''}" required>
-                                      </div>
-                                      <div class="form-group">
-                                        <button type="button" class="btn btn-primary" onclick="saveRecord()">Save Changes</button>
-                                        <button type="button" class="btn btn-secondary" onclick="window.close()">Cancel</button>
-                                      </div>
-                                    </form>
-                                  </div>
-                                  <script>
-                                    function saveRecord() {
-                                      const data = {
-                                        ownerName: document.getElementById('ownerName').value,
-                                        location: document.getElementById('location').value
-                                      };
-                                      fetch('/api/animals/${it.id}', {
-                                        method: 'PUT',
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                          'Authorization': 'Bearer ' + localStorage.getItem('token')
-                                        },
-                                        body: JSON.stringify(data)
-                                      })
-                                      .then(async response => {
-                                        if (!response.ok) throw new Error('Failed to update');
-                                        alert('✅ Record updated successfully!');
-                                        window.close();
-                                        window.opener.location.reload();
-                                      })
-                                      .catch(error => {
-                                        alert('❌ Error: ' + error.message);
-                                      });
-                                    }
-                                  </script>
-                                </body>
-                              </html>
-                            `)
-                          }}
+                          onClick={() => openAnimalModal(it)}
                           style={{ 
                             flex: 1,
                             minWidth: '80px',
@@ -1428,7 +781,8 @@ export default function Records() {
                         </button>
                         <button 
                           className="btn" 
-                          onClick={deleteRecord}
+                          onClick={() => deleteAnimalRecord(it.id)}
+                          disabled={deletingId === it.id}
                           style={{ 
                             flex: 1,
                             minWidth: '80px',
@@ -1439,7 +793,7 @@ export default function Records() {
                             color: 'white'
                           }}
                         >
-                          🗑️ Delete
+                          {deletingId === it.id ? '⏳' : '🗑️ Delete'}
                         </button>
                       </>
                     )}
@@ -1447,6 +801,570 @@ export default function Records() {
                 </div>
               )
             })}
+          </div>
+        )}
+        {/* Verification Details Modal */}
+        {verificationModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              maxWidth: '560px',
+              width: '100%',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                background: verificationModal.status === 'VERIFIED'
+                  ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)'
+                  : verificationModal.status === 'TAMPERED'
+                    ? 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'
+                    : 'linear-gradient(135deg, #4b5563 0%, #6b7280 100%)',
+                color: 'white',
+                padding: '20px 24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>🛡️</span>
+                  <h3 style={{ margin: 0, color: 'white', fontSize: '1.2rem' }}>
+                    Tamper-Evident Record Verification
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setVerificationModal(null)}
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    color: 'white',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ padding: '24px' }}>
+                <div style={{
+                  padding: '16px',
+                  borderRadius: '12px',
+                  marginBottom: '20px',
+                  backgroundColor: verificationModal.status === 'VERIFIED' ? '#ecfdf5' : verificationModal.status === 'TAMPERED' ? '#fef2f2' : '#f3f4f6',
+                  border: `1px solid ${verificationModal.status === 'VERIFIED' ? '#a7f3d0' : verificationModal.status === 'TAMPERED' ? '#fecaca' : '#e5e7eb'}`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '20px' }}>
+                      {verificationModal.status === 'VERIFIED' ? '✅' : verificationModal.status === 'TAMPERED' ? '🚨' : '⚠️'}
+                    </span>
+                    <strong style={{
+                      fontSize: '1.1rem',
+                      color: verificationModal.status === 'VERIFIED' ? '#065f46' : verificationModal.status === 'TAMPERED' ? '#991b1b' : '#374151'
+                    }}>
+                      STATUS: {verificationModal.status}
+                    </strong>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#4b5563' }}>
+                    {verificationModal.message || (verificationModal.status === 'TAMPERED' ? 'Record attributes do not match stored cryptographic audit hash!' : '')}
+                  </p>
+                </div>
+
+                {verificationModal.status === 'TAMPERED' && verificationModal.tamperDetails?.modifiedFields?.length > 0 && (
+                  <div style={{
+                    marginBottom: '16px',
+                    padding: '12px',
+                    backgroundColor: '#fff1f2',
+                    border: '1px solid #ffe4e6',
+                    borderRadius: '8px'
+                  }}>
+                    <strong style={{ color: '#9f1239', fontSize: '13px', display: 'block', marginBottom: '6px' }}>
+                      Detected Field Modifications:
+                    </strong>
+                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '12px', color: '#881337' }}>
+                      {verificationModal.tamperDetails.modifiedFields.map((f, i) => (
+                        <li key={i}>
+                          <strong>{f.field}:</strong> Stored: <code>{String(f.storedValue)}</code> → Current: <code>{String(f.currentValue)}</code>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px' }}>
+                  <div>
+                    <span style={{ color: '#6b7280', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Animal ID</span>
+                    <span style={{ fontFamily: '"Times New Roman", Times, serif', fontWeight: 'bold' }}>{verificationModal.animalId}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Current Record SHA-256 Hash</span>
+                    <span style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11px', wordBreak: 'break-all', background: '#f8fafc', padding: '4px 6px', borderRadius: '4px', display: 'block' }}>
+                      {verificationModal.currentHash || 'N/A'}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Anchored Audit Chain Hash</span>
+                    <span style={{ fontFamily: '"Times New Roman", Times, serif', fontSize: '11px', wordBreak: 'break-all', background: '#f8fafc', padding: '4px 6px', borderRadius: '4px', display: 'block' }}>
+                      {verificationModal.storedHash || 'N/A'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '6px' }}>
+                    <div>
+                      <span style={{ color: '#6b7280', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Last Operation</span>
+                      <strong>{verificationModal.lastOperation || 'N/A'}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: '#6b7280', display: 'block', fontSize: '11px', textTransform: 'uppercase' }}>Chain Continuity</span>
+                      <strong style={{ color: verificationModal.chainValid ? '#059669' : '#dc2626' }}>
+                        {verificationModal.chainValid ? 'Chain Intact' : 'Chain Broken'}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '24px', textAlign: 'right' }}>
+                  <button
+                    onClick={() => setVerificationModal(null)}
+                    style={{
+                      padding: '8px 20px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: '#4f46e5',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Animal Details, Health Update, and Deterministic QR Modal */}
+        {selectedAnimal && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9998,
+            padding: '20px'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              maxWidth: '820px',
+              width: '100%',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.3)',
+              overflow: 'hidden'
+            }}>
+              {/* Modal Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+                color: 'white',
+                padding: '18px 24px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '24px' }}>📋</span>
+                  <div>
+                    <h3 style={{ margin: 0, color: 'white', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                      Animal Details &amp; Identification
+                    </h3>
+                    <span style={{ fontSize: '12px', opacity: 0.85, fontFamily: '"Times New Roman", Times, serif' }}>
+                      ID: {selectedAnimal.id} | Tag: {selectedAnimal.ear_tag || selectedAnimal.earTag || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedAnimal(null)}
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    color: 'white',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                  title="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+                {editMessage && (
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    fontSize: '14px',
+                    backgroundColor: editMessage.startsWith('✅') ? '#ecfdf5' : '#fef2f2',
+                    border: `1px solid ${editMessage.startsWith('✅') ? '#a7f3d0' : '#fecaca'}`,
+                    color: editMessage.startsWith('✅') ? '#065f46' : '#991b1b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span>{editMessage}</span>
+                    <button
+                      onClick={() => setEditMessage('')}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? '1fr' : '1.3fr 1fr',
+                  gap: '24px'
+                }}>
+                  {/* Left Column: Information & Edit Form */}
+                  <div>
+                    <div style={{
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      marginBottom: '20px'
+                    }}>
+                      <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Animal Attributes
+                      </h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Species</span>
+                          <strong>{selectedAnimal.species || 'Cattle'}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Breed</span>
+                          <strong>{selectedAnimal.breed || 'Unknown'}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Gender</span>
+                          <strong>{selectedAnimal.gender || 'N/A'}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Age</span>
+                          <strong>{selectedAnimal.age || selectedAnimal.ageMonths ? `${selectedAnimal.age || selectedAnimal.ageMonths} mo` : 'N/A'}</strong>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Owner</span>
+                          <span>{selectedAnimal.owner_name || selectedAnimal.ownerName || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Registered</span>
+                          <span>{selectedAnimal.created_at ? new Date(selectedAnimal.created_at).toLocaleDateString() : 'N/A'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Edit Health & Vaccination */}
+                    <div style={{
+                      backgroundColor: '#f0fdf4',
+                      border: '1px solid #bbf7d0',
+                      borderRadius: '12px',
+                      padding: '16px'
+                    }}>
+                      <h4 style={{ margin: '0 0 14px 0', fontSize: '14px', color: '#166534', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>💉</span> Update Health &amp; Vaccination
+                      </h4>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}>
+                            Health Status:
+                          </label>
+                          <select
+                            value={editForm.healthStatus}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, healthStatus: e.target.value }))}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: '1px solid #cbd5e1',
+                              fontSize: '13px',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <option value="healthy">Healthy</option>
+                            <option value="sick">Sick / Unwell</option>
+                            <option value="quarantine">Quarantine</option>
+                            <option value="recovered">Recovered</option>
+                            <option value="under_observation">Under Observation</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}>
+                            Vaccination Status:
+                          </label>
+                          <select
+                            value={editForm.vaccinationStatus}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, vaccinationStatus: e.target.value }))}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '6px',
+                              border: '1px solid #cbd5e1',
+                              fontSize: '13px',
+                              backgroundColor: 'white'
+                            }}
+                          >
+                            <option value="vaccinated">Vaccinated (Up to date)</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="partially_vaccinated">Partially Vaccinated</option>
+                            <option value="unknown">Unknown</option>
+                          </select>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}>
+                              Weight (kg):
+                            </label>
+                            <input
+                              type="number"
+                              step="0.1"
+                              placeholder="e.g. 350"
+                              value={editForm.weight}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, weight: e.target.value }))}
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                borderRadius: '6px',
+                                border: '1px solid #cbd5e1',
+                                fontSize: '13px'
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#374151', marginBottom: '4px' }}>
+                              Location / Pen:
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Barn A"
+                              value={editForm.location}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, location: e.target.value }))}
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                borderRadius: '6px',
+                                border: '1px solid #cbd5e1',
+                                fontSize: '13px'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={saveAnimalUpdates}
+                          disabled={savingEdit}
+                          style={{
+                            marginTop: '8px',
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            backgroundColor: savingEdit ? '#94a3b8' : '#16a34a',
+                            color: 'white',
+                            border: 'none',
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            cursor: savingEdit ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          {savingEdit ? 'Saving...' : '💾 Save Health/Vaccination Record'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Deterministic QR & Verification */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}>
+                      <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#334155' }}>
+                        Deterministic QR Code
+                      </h4>
+
+                      <div style={{
+                        padding: '12px',
+                        background: 'white',
+                        borderRadius: '12px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                        display: 'inline-block'
+                      }}>
+                        <QRCodeCanvas
+                          id={`modal-qr-${selectedAnimal.id}`}
+                          value={JSON.stringify({
+                            protocol: 'pashuvision',
+                            version: '1.0',
+                            type: 'animal',
+                            id: selectedAnimal.id,
+                            earTag: selectedAnimal.ear_tag || selectedAnimal.earTag || ''
+                          })}
+                          size={180}
+                          level="H"
+                          includeMargin={true}
+                        />
+                      </div>
+
+                      <div style={{ marginTop: '10px', fontSize: '11px', color: '#64748b' }}>
+                        🔒 <strong>Privacy Protected:</strong> Contains only verified animal identifier. No personal owner data.
+                      </div>
+
+                      <button
+                        onClick={() => downloadQRCode(selectedAnimal.id)}
+                        style={{
+                          marginTop: '12px',
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          backgroundColor: '#0284c7',
+                          color: 'white',
+                          border: 'none',
+                          fontWeight: 'bold',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        📥 Download QR (PNG)
+                      </button>
+                    </div>
+
+                    {/* Verification & Record Actions */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}>
+                      <button
+                        onClick={() => verifyRecord(selectedAnimal.id)}
+                        disabled={verifyingId === selectedAnimal.id}
+                        style={{
+                          padding: '10px 16px',
+                          borderRadius: '8px',
+                          backgroundColor: '#4338ca',
+                          color: 'white',
+                          border: 'none',
+                          fontWeight: 'bold',
+                          fontSize: '13px',
+                          cursor: verifyingId === selectedAnimal.id ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <span>🛡️</span>
+                        {verifyingId === selectedAnimal.id ? 'Verifying Integrity...' : 'Verify Blockchain Hash'}
+                      </button>
+
+                      <button
+                        onClick={() => deleteAnimalRecord(selectedAnimal.id)}
+                        disabled={deletingId === selectedAnimal.id}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          backgroundColor: '#fee2e2',
+                          color: '#b91c1c',
+                          border: '1px solid #fecaca',
+                          fontWeight: 'bold',
+                          fontSize: '12px',
+                          cursor: deletingId === selectedAnimal.id ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <span>🗑️</span>
+                        {deletingId === selectedAnimal.id ? 'Deleting...' : 'Delete Animal Record'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div style={{
+                padding: '14px 24px',
+                borderTop: '1px solid #e2e8f0',
+                backgroundColor: '#f8fafc',
+                display: 'flex',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  onClick={() => setSelectedAnimal(null)}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    backgroundColor: 'white',
+                    color: '#334155',
+                    fontWeight: 'bold',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

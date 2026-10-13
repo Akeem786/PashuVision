@@ -10,6 +10,13 @@ import signal
 import atexit
 import gc
 
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 # Disable verbose logging to prevent Railway rate limiting
 VERBOSE_LOGGING = os.environ.get('VERBOSE_LOGGING', 'false').lower() == 'true'
 
@@ -31,15 +38,20 @@ def signal_handler(signum, frame):
 signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 
-# Check NumPy version BEFORE importing torch to catch compatibility issues early
+# Check NumPy version compatibility with old PyTorch 2.1.0
 try:
     import numpy as np
     numpy_version = np.__version__
     major_version = int(numpy_version.split('.')[0])
     if major_version >= 2:
-        print(f"❌ ERROR: NumPy {numpy_version} is incompatible with PyTorch 2.1.0", flush=True)
-        print("   PyTorch 2.1.0 requires NumPy <2.0", flush=True)
-        sys.exit(1)
+        try:
+            import torch
+            if torch.__version__.startswith('2.1.'):
+                print(f"❌ ERROR: NumPy {numpy_version} is incompatible with PyTorch {torch.__version__}", flush=True)
+                print("   PyTorch 2.1.0 requires NumPy <2.0", flush=True)
+                sys.exit(1)
+        except ImportError:
+            pass
 except ImportError:
     pass  # NumPy will be installed by PyTorch
 
@@ -156,7 +168,8 @@ def load_model():
     
     if not model_file_valid:
         # Use lock to prevent multiple simultaneous downloads
-        with download_lock:
+        download_lock.acquire()
+        try:
             # Double-check if file was downloaded by another thread while we waited
             if os.path.exists(pth_path) and os.path.getsize(pth_path) > 50 * 1024 * 1024:
                 print("✅ Model file was downloaded by another thread, using it", flush=True)
@@ -306,6 +319,8 @@ def load_model():
                 except:
                     pass
             return False
+        finally:
+            download_lock.release()
     
     # Final check: ensure file exists and is readable before loading
     if not os.path.exists(pth_path):

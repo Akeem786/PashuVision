@@ -1,0 +1,29 @@
+{
+  "test-pref-user-456": {
+    "email": true,
+    "sms": false,
+    "push": true,
+    "vaccinationReminders": true,
+    "healthAlerts": true,
+    "approvalNotifications": true,
+    "updatedAt": "2026-09-19T05:26:24.156Z"
+  },
+  "test-optout-user-789": {
+    "email": true,
+    "sms": true,
+    "push": true,
+    "vaccinationReminders": false,
+    "healthAlerts": true,
+    "approvalNotifications": true,
+    "updatedAt": "2026-09-19T05:26:24.161Z"
+  },
+  "test-user-api-id": {
+    "email": true,
+    "sms": false,
+    "push": true,
+    "vaccinationReminders": true,
+    "healthAlerts": true,
+    "approvalNotifications": true,
+    "updatedAt": "2026-09-19T05:26:24.192Z"
+  }
+}

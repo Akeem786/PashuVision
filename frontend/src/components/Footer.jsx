@@ -30,7 +30,7 @@ export default function Footer() {
             fontWeight: '400',
             letterSpacing: '0.3px'
           }}>
-            © 2025 PashuVision. All rights reserved.
+            © 2026 PashuVision. All rights reserved.
           </div>
           
           {/* Contact Info */}
@@ -45,7 +45,7 @@ export default function Footer() {
               fontWeight: '500',
               letterSpacing: '0.2px'
             }}>
-              Developed by Bhat Aakib
+              Developed by <span style={{ color: 'var(--color-primary, #11a36a)', fontWeight: '700' }}>Akeem</span>
             </div>
             <div className="footer-divider" style={{
               width: '1px',
@@ -58,7 +58,7 @@ export default function Footer() {
               fontWeight: '500',
               letterSpacing: '0.2px'
             }}>
-              +91 98765 43210
+              +91 9320621856
             </div>
           </div>
         </div>

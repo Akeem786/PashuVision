@@ -16,38 +16,91 @@ class AutoQRGenerationService {
     }
   }
 
-  // Generate QR code for animal record
+  // Generate deterministic, privacy-preserving QR code for animal record
   async generateAnimalQR(animalData) {
     try {
-      const qrData = {
-        type: 'animal_record',
-        id: animalData.id,
-        earTag: animalData.earTag,
-        breed: animalData.breed,
-        owner: animalData.owner,
-        village: animalData.village,
-        district: animalData.district,
-        state: animalData.state,
-        generatedAt: new Date().toISOString(),
-        version: '1.0'
+      const animalId = animalData?.id || animalData?._id;
+      if (!animalId) {
+        throw new Error('Animal ID is required for QR code generation');
       }
 
-      const qrString = JSON.stringify(qrData)
-      const qrCodeDataURL = await QRCode.toDataURL(qrString, this.qrOptions)
+      // Privacy-preserving, deterministic canonical QR payload (NO personal data)
+      const qrData = {
+        protocol: 'pashuvision',
+        version: '1.0',
+        type: 'animal',
+        id: String(animalId).trim(),
+        earTag: (animalData.earTag || animalData.ear_tag || '').trim() || null
+      };
+
+      const qrString = JSON.stringify(qrData);
+      const qrCodeDataURL = await QRCode.toDataURL(qrString, this.qrOptions);
       
       return {
         success: true,
+        animalId: qrData.id,
         qrCode: qrCodeDataURL,
         qrData: qrData,
         qrString: qrString
-      }
+      };
     } catch (error) {
-      console.error('QR generation error:', error)
+      console.error('QR generation error:', error);
       return {
         success: false,
         error: error.message
-      }
+      };
     }
+  }
+
+  // Robust parser for QR codes scanned via camera or file
+  parseScannedCode(scannedText) {
+    if (!scannedText || typeof scannedText !== 'string') {
+      return { success: false, error: 'Empty or invalid QR code text' };
+    }
+    const text = scannedText.trim();
+    
+    // 1. Parse JSON payload
+    if (text.startsWith('{') && text.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(text);
+        const id = parsed.id || parsed.animalId;
+        if (id && typeof id === 'string' && id.trim().length >= 3) {
+          return { success: true, id: id.trim(), protocol: parsed.protocol || 'legacy', type: parsed.type || 'animal', earTag: parsed.earTag || null };
+        }
+      } catch (_) {}
+    }
+
+    // 2. Parse URL formats
+    if (text.includes('/records') || text.includes('/animal')) {
+      try {
+        if (text.includes('?id=') || text.includes('&id=')) {
+          const queryPart = text.includes('?') ? text.split('?')[1] : text;
+          const urlParams = new URLSearchParams(queryPart);
+          const id = urlParams.get('id');
+          if (id && id.trim().length >= 3) return { success: true, id: id.trim(), type: 'url' };
+        }
+        const match = text.match(/\/(?:records|animal)\/([a-zA-Z0-9_\-]+)/);
+        if (match && match[1] && match[1].length >= 3) {
+          return { success: true, id: match[1], type: 'url' };
+        }
+      } catch (_) {}
+    }
+
+    // 3. Parse prefix formats (e.g. animal:XYZ, pashuvision:animal:XYZ, pashuvision://animal/XYZ)
+    let cleaned = text;
+    if (cleaned.startsWith('pashuvision://animal/')) cleaned = cleaned.slice(21);
+    else if (cleaned.startsWith('pashuvision:animal:')) cleaned = cleaned.slice(19);
+    else if (cleaned.startsWith('pashuvision:')) cleaned = cleaned.slice(12);
+    else if (cleaned.startsWith('animal:')) cleaned = cleaned.slice(7);
+
+    // Strip trailing slashes or query parameters
+    cleaned = cleaned.split('?')[0].replace(/\/$/, '').trim();
+
+    if (/^[a-zA-Z0-9_\-]+$/.test(cleaned) && cleaned.length >= 3 && cleaned.length <= 64) {
+      return { success: true, id: cleaned, type: 'raw' };
+    }
+
+    return { success: false, error: 'Unrecognized QR code format. The scanned code does not contain a valid PashuVision animal identifier.' };
   }
 
   // Generate QR code for vaccination record

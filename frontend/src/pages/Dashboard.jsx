@@ -146,11 +146,13 @@ export default function Dashboard() {
   }, [])
 
   const renderUserDashboard = () => (
-    <div className="card" style={{
-      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+    <div className="card dashboard-card-light" style={{
+      background: '#FFFFFF',
       borderRadius: '16px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-      border: '1px solid rgba(0,0,0,0.05)'
+      padding: '24px',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+      border: '1px solid #E2E8F0',
+      color: '#172033'
     }}>
       {/* Header */}
       <div style={{
@@ -159,45 +161,49 @@ export default function Dashboard() {
         alignItems: 'center',
         marginBottom: '24px',
         paddingBottom: '20px',
-        borderBottom: '2px solid #e9ecef'
+        borderBottom: '1px solid #E2E8F0',
+        flexWrap: 'wrap',
+        gap: '16px'
       }}>
-              <div>
+        <div>
           <h1 style={{
-            fontSize: '2.5rem',
-            fontWeight: 'bold',
+            fontSize: '2.2rem',
+            fontWeight: '800',
             margin: 0,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            color: '#172033',
+            fontFamily: 'inherit',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
             Welcome back, {user?.name || 'User'}! 👋
           </h1>
-          <p style={{ color: '#6c757d', margin: '8px 0 0 0', fontSize: '1.1rem' }}>
+          <p style={{ color: '#5B6472', margin: '8px 0 0 0', fontSize: '1.05rem', fontWeight: '500' }}>
             Here's your overview today
-                </p>
-              </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ 
+          </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ 
             padding: '8px 16px',
-            borderRadius: '12px',
-            background: isOnline ? '#d4edda' : '#f8d7da',
-            color: isOnline ? '#155724' : '#721c24',
+            borderRadius: '10px',
+            background: isOnline ? '#DCFCE7' : '#FEE2E2',
+            color: isOnline ? '#15803D' : '#DC2626',
+            border: `1px solid ${isOnline ? '#BBF7D0' : '#FECACA'}`,
             fontSize: '14px',
             fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
             gap: '6px'
-                }}>
+          }}>
             {isOnline ? '🟢' : '🔴'} {isOnline ? 'Online' : 'Offline'}
-                </div>
+          </div>
           <button
             onClick={fetchDashboardData}
             style={{
               padding: '10px 20px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)',
+              color: '#FFFFFF',
               border: 'none',
               cursor: 'pointer',
               fontWeight: '600',
@@ -205,16 +211,16 @@ export default function Dashboard() {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+              boxShadow: '0 4px 12px rgba(21, 101, 192, 0.25)',
               transition: 'transform 0.2s'
             }}
-            onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
             🔄 Refresh
           </button>
-              </div>
-            </div>
+        </div>
+      </div>
 
       {/* Quick Actions */}
       <div style={{
@@ -227,92 +233,92 @@ export default function Dashboard() {
           to="/records/new"
           style={{
             padding: '20px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #15803D 0%, #166534 100%)',
+            color: '#FFFFFF',
             textDecoration: 'none',
             textAlign: 'center',
-            boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
+            boxShadow: '0 4px 16px rgba(21, 128, 61, 0.25)',
             transition: 'all 0.3s',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-4px)'
-            e.target.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.4)'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(21, 128, 61, 0.35)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(21, 128, 61, 0.25)'
           }}
         >
           <div style={{ fontSize: '32px' }}>📷</div>
-          <div style={{ fontWeight: 'bold', fontSize: '16px' }}>New Record</div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>Capture animal</div>
-              </Link>
+          <div style={{ fontWeight: '700', fontSize: '16px', color: '#FFFFFF' }}>New Record</div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.92)' }}>Capture animal</div>
+        </Link>
 
         <Link
           to="/records"
           style={{
             padding: '20px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+            color: '#FFFFFF',
             textDecoration: 'none',
             textAlign: 'center',
-            boxShadow: '0 4px 16px rgba(245, 87, 108, 0.3)',
+            boxShadow: '0 4px 16px rgba(37, 99, 235, 0.25)',
             transition: 'all 0.3s',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-4px)'
-            e.target.style.boxShadow = '0 8px 24px rgba(245, 87, 108, 0.4)'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.35)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 16px rgba(245, 87, 108, 0.3)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(37, 99, 235, 0.25)'
           }}
         >
           <div style={{ fontSize: '32px' }}>📋</div>
-          <div style={{ fontWeight: 'bold', fontSize: '16px' }}>My Records</div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>View all</div>
-              </Link>
+          <div style={{ fontWeight: '700', fontSize: '16px', color: '#FFFFFF' }}>My Records</div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.92)' }}>View all</div>
+        </Link>
 
         <Link
           to="/scan"
           style={{
             padding: '20px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-            color: 'white',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+            color: '#FFFFFF',
             textDecoration: 'none',
             textAlign: 'center',
-            boxShadow: '0 4px 16px rgba(79, 172, 254, 0.3)',
+            boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)',
             transition: 'all 0.3s',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-4px)'
-            e.target.style.boxShadow = '0 8px 24px rgba(79, 172, 254, 0.4)'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(124, 58, 237, 0.35)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 16px rgba(79, 172, 254, 0.3)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(124, 58, 237, 0.25)'
           }}
         >
           <div style={{ fontSize: '32px' }}>📱</div>
-          <div style={{ fontWeight: 'bold', fontSize: '16px' }}>Scan QR</div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>Quick access</div>
-              </Link>
-            </div>
+          <div style={{ fontWeight: '700', fontSize: '16px', color: '#FFFFFF' }}>Scan QR</div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.92)' }}>Quick access</div>
+        </Link>
+      </div>
 
       {/* Statistics Cards */}
       <div style={{
@@ -322,130 +328,163 @@ export default function Dashboard() {
         marginBottom: '32px'
       }}>
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)'
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(29, 78, 216, 0.25)'
         }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Total Animals</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.92)', fontWeight: '600', marginBottom: '6px' }}>Total Animals</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.1 }}>
             {loading ? '...' : stats.total}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>All records</div>
-              </div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.85)' }}>All records</div>
+        </div>
 
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-          color: 'white',
-          boxShadow: '0 4px 16px rgba(245, 87, 108, 0.3)'
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)'
         }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Today's Records</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.92)', fontWeight: '600', marginBottom: '6px' }}>Today's Records</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.1 }}>
             {loading ? '...' : stats.todayRegistered}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Registered today</div>
-              </div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.85)' }}>Registered today</div>
+        </div>
 
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-          color: 'white',
-          boxShadow: '0 4px 16px rgba(79, 172, 254, 0.3)'
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #15803D 0%, #166534 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(21, 128, 61, 0.25)'
         }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Approved</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.92)', fontWeight: '600', marginBottom: '6px' }}>Approved</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.1 }}>
             {loading ? '...' : stats.approved}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Verified records</div>
-              </div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.85)' }}>Verified records</div>
+        </div>
 
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-          color: 'white',
-          boxShadow: '0 4px 16px rgba(67, 233, 123, 0.3)'
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #B45309 0%, #92400E 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(180, 83, 9, 0.25)'
         }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Pending</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.92)', fontWeight: '600', marginBottom: '6px' }}>Pending</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.1 }}>
             {loading ? '...' : stats.pending}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Awaiting review</div>
-              </div>
-            </div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.85)' }}>Awaiting review</div>
+        </div>
+      </div>
 
       {/* Recent Animals */}
       {stats.recentAnimals.length > 0 && (
-                <div style={{ 
-          background: 'white',
+        <div style={{ 
+          background: '#FFFFFF',
           borderRadius: '16px',
           padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
         }}>
-          <h3 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', fontWeight: 'bold' }}>
-            📋 Recent Records
+          <h3 style={{ 
+            margin: '0 0 20px 0', 
+            fontSize: '1.4rem', 
+            fontWeight: '700',
+            color: '#172033',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>📋</span> Recent Records
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {stats.recentAnimals.map((animal, index) => (
-              <div
-                key={animal.id}
-                style={{
-                  padding: '16px',
-                  borderRadius: '12px',
-                  background: index % 2 === 0 ? '#f8f9fa' : 'white',
-                  border: '1px solid #e9ecef',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#e9ecef'
-                  e.target.style.transform = 'translateX(4px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = index % 2 === 0 ? '#f8f9fa' : 'white'
-                  e.target.style.transform = 'translateX(0)'
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                    {animal.ownerName || 'Unknown Owner'}
+            {stats.recentAnimals.map((animal, index) => {
+              const status = (animal.status || 'pending').toLowerCase()
+              const isApproved = status === 'approved'
+              const isRejected = status === 'rejected'
+              
+              const badgeBg = isApproved ? '#DCFCE7' : isRejected ? '#FEE2E2' : '#FEF3C7'
+              const badgeColor = isApproved ? '#15803D' : isRejected ? '#B91C1C' : '#B45309'
+              const badgeBorder = isApproved ? '#BBF7D0' : isRejected ? '#FECACA' : '#FDE68A'
+
+              return (
+                <div
+                  key={animal.id}
+                  style={{
+                    padding: '16px 20px',
+                    borderRadius: '12px',
+                    background: index % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: 'all 0.2s ease',
+                    gap: '16px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#F1F5F9'
+                    e.currentTarget.style.transform = 'translateX(4px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = index % 2 === 0 ? '#F8FAFC' : '#FFFFFF'
+                    e.currentTarget.style.transform = 'translateX(0)'
+                  }}
+                >
+                  <div>
+                    <div style={{ 
+                      fontWeight: '700', 
+                      fontSize: '1.05rem', 
+                      color: '#172033', 
+                      marginBottom: '4px' 
+                    }}>
+                      {animal.ownerName || 'Unknown Owner'}
                     </div>
-                  <div style={{ fontSize: '14px', color: '#6c757d' }}>
-                    {animal.predictedBreed || 'Unknown Breed'} • {animal.location || 'No location'}
+                    <div style={{ 
+                      fontSize: '14px', 
+                      color: '#5B6472',
+                      fontWeight: '500'
+                    }}>
+                      {animal.predictedBreed || 'Unknown Breed'} • {animal.location || 'No location'}
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    background: badgeBg,
+                    color: badgeColor,
+                    border: `1px solid ${badgeBorder}`,
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {status}
                   </div>
                 </div>
-                <div style={{
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  background: animal.status === 'approved' ? '#d4edda' : 
-                              animal.status === 'rejected' ? '#f8d7da' : '#fff3cd',
-                  color: animal.status === 'approved' ? '#155724' : 
-                        animal.status === 'rejected' ? '#721c24' : '#856404',
-                  fontSize: '12px',
-                  fontWeight: 'bold'
-                }}>
-                  {animal.status?.toUpperCase() || 'PENDING'}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
-            </div>
+        </div>
       )}
-          </div>
-        )
+    </div>
+  )
 
   const renderAdminDashboard = () => (
-    <div className="card" style={{
-      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+    <div className="card admin-dashboard" style={{
+      background: '#FFFFFF',
       borderRadius: '16px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-      border: '1px solid rgba(0,0,0,0.05)'
+      padding: '24px',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+      border: '1px solid #E2E8F0',
+      color: '#172033'
     }}>
       {/* Header */}
       <div style={{
@@ -454,30 +493,42 @@ export default function Dashboard() {
         alignItems: 'center',
         marginBottom: '24px',
         paddingBottom: '20px',
-        borderBottom: '2px solid #e9ecef'
+        borderBottom: '1px solid #E2E8F0',
+        flexWrap: 'wrap',
+        gap: '16px'
       }}>
-              <div>
+        <div>
           <h1 style={{
-            fontSize: '2.5rem',
-            fontWeight: 'bold',
+            fontSize: '2.2rem',
+            fontWeight: '800',
             margin: 0,
-            background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            color: '#172033',
+            fontFamily: 'inherit',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-                  👑 Admin Dashboard
-                </h1>
-          <p style={{ color: '#6c757d', margin: '8px 0 0 0', fontSize: '1.1rem' }}>
+            <span>👑</span>
+            <span style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #1565C0 0%, #2E7D32 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              color: '#1565C0'
+            }}>Admin Dashboard</span>
+          </h1>
+          <p style={{ color: '#475569', margin: '8px 0 0 0', fontSize: '1.05rem', fontWeight: '500' }}>
             System overview and management
-                </p>
-              </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <div style={{
             padding: '8px 16px',
-            borderRadius: '12px',
-            background: isOnline ? '#d4edda' : '#f8d7da',
-            color: isOnline ? '#155724' : '#721c24',
+            borderRadius: '10px',
+            background: isOnline ? '#DCFCE7' : '#FEE2E2',
+            color: isOnline ? '#166534' : '#991B1B',
+            border: `1px solid ${isOnline ? '#BBF7D0' : '#FECACA'}`,
             fontSize: '14px',
             fontWeight: '600',
             display: 'flex',
@@ -486,30 +537,31 @@ export default function Dashboard() {
           }}>
             {isOnline ? '🟢' : '🔴'} {isOnline ? 'Online' : 'Offline'}
           </div>
-                <button 
-                  onClick={fetchDashboardData}
-                  style={{
+          <button 
+            onClick={fetchDashboardData}
+            style={{
               padding: '10px 20px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)',
+              color: '#FFFFFF',
+              border: 'none',
+              cursor: 'pointer',
               fontWeight: '600',
               fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center',
+              display: 'flex',
+              alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
-              transition: 'transform 0.2s'
-                  }}
-            onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-                >
-                  🔄 Refresh
-                </button>
-              </div>
-            </div>
+              boxShadow: '0 4px 12px rgba(21, 101, 192, 0.25)',
+              transition: 'transform 0.2s',
+              fontFamily: 'inherit'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
 
       {/* Admin Quick Actions */}
       <div style={{
@@ -521,93 +573,93 @@ export default function Dashboard() {
         <Link
           to="/admin/users"
           style={{
-            padding: '24px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-            color: 'white',
+            padding: '22px',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+            color: '#FFFFFF',
             textDecoration: 'none',
             textAlign: 'center',
-            boxShadow: '0 4px 16px rgba(156, 39, 176, 0.3)',
+            boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)',
             transition: 'all 0.3s',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-4px)'
-            e.target.style.boxShadow = '0 8px 24px rgba(156, 39, 176, 0.4)'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(124, 58, 237, 0.35)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 16px rgba(156, 39, 176, 0.3)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(124, 58, 237, 0.25)'
           }}
         >
-          <div style={{ fontSize: '36px' }}>👥</div>
-          <div style={{ fontWeight: 'bold', fontSize: '18px' }}>Manage Users</div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>User management</div>
-              </Link>
+          <div style={{ fontSize: '32px' }}>👥</div>
+          <div style={{ fontWeight: '700', fontSize: '17px', color: '#FFFFFF' }}>Manage Users</div>
+          <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.95)' }}>User management</div>
+        </Link>
 
         <Link
           to="/admin/breeds"
           style={{
-            padding: '24px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)',
-            color: 'white',
+            padding: '22px',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #B45309 0%, #92400E 100%)',
+            color: '#FFFFFF',
             textDecoration: 'none',
             textAlign: 'center',
-            boxShadow: '0 4px 16px rgba(255, 87, 34, 0.3)',
+            boxShadow: '0 4px 16px rgba(180, 83, 9, 0.25)',
             transition: 'all 0.3s',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-4px)'
-            e.target.style.boxShadow = '0 8px 24px rgba(255, 87, 34, 0.4)'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(180, 83, 9, 0.35)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 16px rgba(255, 87, 34, 0.3)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(180, 83, 9, 0.25)'
           }}
         >
-          <div style={{ fontSize: '36px' }}>🐄</div>
-          <div style={{ fontWeight: 'bold', fontSize: '18px' }}>Breed Database</div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>Manage breeds</div>
-              </Link>
+          <div style={{ fontSize: '32px' }}>🐄</div>
+          <div style={{ fontWeight: '700', fontSize: '17px', color: '#FFFFFF' }}>Breed Database</div>
+          <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.95)' }}>Manage breeds</div>
+        </Link>
 
         <Link
           to="/records"
           style={{
-            padding: '24px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)',
-            color: 'white',
+            padding: '22px',
+            borderRadius: '14px',
+            background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+            color: '#FFFFFF',
             textDecoration: 'none',
             textAlign: 'center',
-            boxShadow: '0 4px 16px rgba(33, 150, 243, 0.3)',
+            boxShadow: '0 4px 16px rgba(37, 99, 235, 0.25)',
             transition: 'all 0.3s',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-4px)'
-            e.target.style.boxShadow = '0 8px 24px rgba(33, 150, 243, 0.4)'
+            e.currentTarget.style.transform = 'translateY(-3px)'
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.35)'
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)'
-            e.target.style.boxShadow = '0 4px 16px rgba(33, 150, 243, 0.3)'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(37, 99, 235, 0.25)'
           }}
         >
-          <div style={{ fontSize: '36px' }}>📋</div>
-          <div style={{ fontWeight: 'bold', fontSize: '18px' }}>All Records</div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>View all animals</div>
-              </Link>
-            </div>
+          <div style={{ fontSize: '32px' }}>📋</div>
+          <div style={{ fontWeight: '700', fontSize: '17px', color: '#FFFFFF' }}>All Records</div>
+          <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.95)' }}>View all animals</div>
+        </Link>
+      </div>
 
       {/* Admin Statistics */}
       <div style={{
@@ -616,75 +668,88 @@ export default function Dashboard() {
         gap: '20px',
         marginBottom: '32px'
       }}>
+        {/* Total Users */}
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-                background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
-                color: 'white',
-          boxShadow: '0 4px 16px rgba(156, 39, 176, 0.3)'
-              }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Total Users</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
-                  {loading ? '...' : stats.totalUsers}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Registered users</div>
-              </div>
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(124, 58, 237, 0.25)'
+        }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.95)', fontWeight: '600', marginBottom: '6px' }}>Total Users</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.2 }}>
+            {loading ? '...' : stats.totalUsers}
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.92)' }}>Registered users</div>
+        </div>
               
+        {/* Total Animals */}
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-          boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)'
-              }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Total Animals</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
-                  {loading ? '...' : stats.total}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>All records</div>
-              </div>
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(29, 78, 216, 0.25)'
+        }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.95)', fontWeight: '600', marginBottom: '6px' }}>Total Animals</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.2 }}>
+            {loading ? '...' : stats.total}
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.92)' }}>All records</div>
+        </div>
               
+        {/* Approved */}
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                color: 'white',
-          boxShadow: '0 4px 16px rgba(79, 172, 254, 0.3)'
-              }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Approved</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
-                  {loading ? '...' : stats.approved}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Verified records</div>
-              </div>
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #15803D 0%, #166534 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(21, 128, 61, 0.25)'
+        }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.95)', fontWeight: '600', marginBottom: '6px' }}>Approved</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.2 }}>
+            {loading ? '...' : stats.approved}
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.92)' }}>Verified records</div>
+        </div>
               
+        {/* Pending */}
         <div style={{
-          padding: '24px',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                color: 'white',
-          boxShadow: '0 4px 16px rgba(245, 87, 108, 0.3)'
-              }}>
-          <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>Pending</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '4px' }}>
+          padding: '22px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #B45309 0%, #92400E 100%)',
+          color: '#FFFFFF',
+          boxShadow: '0 4px 16px rgba(180, 83, 9, 0.25)'
+        }}>
+          <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.95)', fontWeight: '600', marginBottom: '6px' }}>Pending</div>
+          <div style={{ fontSize: '36px', fontWeight: '800', color: '#FFFFFF', marginBottom: '4px', lineHeight: 1.2 }}>
             {loading ? '...' : stats.pending}
-                </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Awaiting review</div>
-              </div>
-            </div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.92)' }}>Awaiting review</div>
+        </div>
+      </div>
 
-            {/* Breed Distribution */}
+      {/* Breed Distribution */}
       {Object.keys(stats.breeds).length > 0 && (
         <div style={{
-          background: 'white',
+          background: '#FFFFFF',
           borderRadius: '16px',
           padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
           marginBottom: '24px'
         }}>
-          <h3 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', fontWeight: 'bold' }}>
-            🐄 Breed Distribution
-              </h3>
+          <h3 style={{ 
+            margin: '0 0 20px 0', 
+            fontSize: '1.4rem', 
+            fontWeight: '700',
+            color: '#172033',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>🐄</span> Breed Distribution
+          </h3>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -699,116 +764,179 @@ export default function Dashboard() {
                   style={{
                     padding: '16px',
                     borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                    border: '1px solid #dee2e6',
-                    textAlign: 'center'
+                    background: '#F8FAFC',
+                    border: '1px solid #E2E8F0',
+                    textAlign: 'center',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#CBD5E1'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#E2E8F0'
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.04)'
                   }}
                 >
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{breed}</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
+                  <div style={{ 
+                    fontWeight: '700', 
+                    fontSize: '1rem', 
+                    color: '#172033',
+                    marginBottom: '4px',
+                    wordBreak: 'break-word'
+                  }}>
+                    {breed}
+                  </div>
+                  <div style={{ 
+                    fontSize: '28px', 
+                    fontWeight: '800', 
+                    color: '#1565C0',
+                    lineHeight: 1.2
+                  }}>
                     {count}
                   </div>
                 </div>
               ))}
-              </div>
-            </div>
+          </div>
+        </div>
       )}
 
       {/* Recent Animals */}
       {stats.recentAnimals.length > 0 && (
         <div style={{
-          background: 'white',
+          background: '#FFFFFF',
           borderRadius: '16px',
           padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
         }}>
-          <h3 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', fontWeight: 'bold' }}>
-            📋 Recent Records
+          <h3 style={{ 
+            margin: '0 0 20px 0', 
+            fontSize: '1.4rem', 
+            fontWeight: '700',
+            color: '#172033',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>📋</span> Recent Records
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {stats.recentAnimals.map((animal, index) => (
-              <div
-                key={animal.id}
-                style={{
-                  padding: '16px',
-                  borderRadius: '12px',
-                  background: index % 2 === 0 ? '#f8f9fa' : 'white',
-                  border: '1px solid #e9ecef',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#e9ecef'
-                  e.target.style.transform = 'translateX(4px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = index % 2 === 0 ? '#f8f9fa' : 'white'
-                  e.target.style.transform = 'translateX(0)'
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                    {animal.ownerName || 'Unknown Owner'}
+            {stats.recentAnimals.map((animal, index) => {
+              const status = (animal.status || 'pending').toLowerCase()
+              const isApproved = status === 'approved'
+              const isRejected = status === 'rejected'
+              
+              const badgeBg = isApproved ? '#DCFCE7' : isRejected ? '#FEE2E2' : '#FEF3C7'
+              const badgeColor = isApproved ? '#166534' : isRejected ? '#991B1B' : '#92400E'
+              const badgeBorder = isApproved ? '#BBF7D0' : isRejected ? '#FECACA' : '#FDE68A'
+
+              return (
+                <div
+                  key={animal.id}
+                  style={{
+                    padding: '16px 20px',
+                    borderRadius: '12px',
+                    background: index % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: 'all 0.2s ease',
+                    gap: '16px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#F1F5F9'
+                    e.currentTarget.style.transform = 'translateX(4px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = index % 2 === 0 ? '#F8FAFC' : '#FFFFFF'
+                    e.currentTarget.style.transform = 'translateX(0)'
+                  }}
+                >
+                  <div>
+                    <div style={{ 
+                      fontWeight: '700', 
+                      fontSize: '1.05rem', 
+                      color: '#172033', 
+                      marginBottom: '4px' 
+                    }}>
+                      {animal.ownerName || 'Unknown Owner'}
+                    </div>
+                    <div style={{ 
+                      fontSize: '14px', 
+                      color: '#475569',
+                      fontWeight: '500'
+                    }}>
+                      {animal.predictedBreed || 'Unknown Breed'} • {animal.location || 'No location'}
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    background: badgeBg,
+                    color: badgeColor,
+                    border: `1px solid ${badgeBorder}`,
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {status}
+                  </div>
                 </div>
-                  <div style={{ fontSize: '14px', color: '#6c757d' }}>
-                    {animal.predictedBreed || 'Unknown Breed'} • {animal.location || 'No location'}
-              </div>
-                </div>
-                <div style={{
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  background: animal.status === 'approved' ? '#d4edda' : 
-                              animal.status === 'rejected' ? '#f8d7da' : '#fff3cd',
-                  color: animal.status === 'approved' ? '#155724' : 
-                        animal.status === 'rejected' ? '#721c24' : '#856404',
-                  fontSize: '12px',
-                  fontWeight: 'bold'
-                }}>
-                  {animal.status?.toUpperCase() || 'PENDING'}
-                </div>
-              </div>
-            ))}
-                      </div>
-                </div>
-              )}
+              )
+            })}
           </div>
-        )
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <Layout>
-      <div className="container" style={{ paddingTop: '80px' }}>
-        <ErrorBanner error={error} onDismiss={() => setError('')} />
-        
-        {loading && <LoadingSpinner message="Loading dashboard..." />}
-        
-        {!loading && (
-          <>
-            {user?.role === 'admin' ? renderAdminDashboard() : renderUserDashboard()}
-            
-            {/* Location Display */}
-            {location && (
-              <div className="card" style={{
-                marginTop: '24px',
-                background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-                borderRadius: '16px',
-                padding: '20px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '24px' }}>📍</span>
-                  <h3 style={{ margin: 0 }}>Current Location</h3>
+      <div style={{
+        background: '#F5F7FA',
+        minHeight: 'calc(100vh - 70px)',
+        paddingTop: '80px',
+        paddingBottom: '40px'
+      }}>
+        <div className="container">
+          <ErrorBanner error={error} onDismiss={() => setError('')} />
+          
+          {loading && <LoadingSpinner message="Loading dashboard..." />}
+          
+          {!loading && (
+            <>
+              {user?.role === 'admin' ? renderAdminDashboard() : renderUserDashboard()}
+              
+              {/* Location Display */}
+              {location && (
+                <div style={{
+                  marginTop: '24px',
+                  background: '#FFFFFF',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '24px' }}>📍</span>
+                    <h3 style={{ margin: 0, color: '#172033', fontSize: '1.2rem', fontWeight: '700' }}>Current Location</h3>
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#475569', fontWeight: '500' }}>
+                    Lat: {location.lat.toFixed(6)}, Lng: {location.lng.toFixed(6)}
+                    <span style={{ marginLeft: '12px', color: '#64748B' }}>
+                      Accuracy: ±{Math.round(location.accuracy)}m
+                    </span>
+                  </div>
                 </div>
-                <div style={{ fontSize: '14px', color: '#666' }}>
-                  Lat: {location.lat.toFixed(6)}, Lng: {location.lng.toFixed(6)}
-                  <span style={{ marginLeft: '12px' }}>
-                    Accuracy: ±{Math.round(location.accuracy)}m
-                  </span>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </div>
       </div>
     </Layout>
   )

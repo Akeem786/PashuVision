@@ -12,9 +12,8 @@ backend/node_modules/@google-cloud/**
 backend/node_modules/canvas/**
 backend/node_modules/sharp/**
 
-# Exclude data files (using Supabase now)
+# Exclude uploaded data images (keeps Vercel package size under limit)
 backend/data/images/**
-backend/data/*.json
 
 # Exclude Python files (using external service)
 backend/models/*.py

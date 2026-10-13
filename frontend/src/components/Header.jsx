@@ -1,9 +1,10 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useState, useEffect } from 'react'
 
 export default function Header() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { t, i18n } = useTranslation()
   const [user, setUser] = useState(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
@@ -62,6 +63,13 @@ export default function Header() {
     return [...baseLinks, ...commonLinks]
   }
 
+  const isLinkActive = (to) => {
+    if (to === '/records') {
+      return location.pathname === '/records' || (location.pathname.startsWith('/records/') && location.pathname !== '/records/new')
+    }
+    return location.pathname === to
+  }
+
   return (
     <header style={{
       background: 'var(--glass-bg)',
@@ -76,7 +84,7 @@ export default function Header() {
       fontFamily: 'Times New Roman, serif'
     }}>
       <div style={{
-        maxWidth: '1200px',
+        maxWidth: '1360px',
         margin: '0 auto',
         padding: 'var(--spacing-sm) var(--spacing-md)',
         display: 'flex',
@@ -147,38 +155,45 @@ export default function Header() {
           </select>
 
           {/* Role-based Navigation */}
-          {getRoleBasedLinks().map(link => (
-            <Link
-              key={link.to}
-              to={link.to}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '8px 12px',
-                borderRadius: 'var(--radius-md)',
-                textDecoration: 'none',
-                color: 'var(--color-text-primary)',
-                fontSize: '13px',
-                fontWeight: '500',
-                fontFamily: 'Times New Roman, serif',
-                transition: 'all 0.3s ease',
-                border: '2px solid transparent',
-                backgroundColor: 'transparent',
-                whiteSpace: 'nowrap',
-                minHeight: '36px'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = 'var(--color-bg-secondary)'
-                e.target.style.borderColor = 'var(--color-primary-green)'
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'transparent'
-                e.target.style.borderColor = 'transparent'
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {getRoleBasedLinks().map(link => {
+            const active = isLinkActive(link.to)
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '7px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  textDecoration: 'none',
+                  color: active ? '#0e8c5a' : 'var(--color-text-primary)',
+                  fontSize: '13px',
+                  fontWeight: active ? '700' : '500',
+                  fontFamily: 'Times New Roman, serif',
+                  transition: 'all 0.2s ease',
+                  border: active ? '2px solid var(--color-primary-green)' : '2px solid transparent',
+                  backgroundColor: active ? 'rgba(17, 163, 106, 0.12)' : 'transparent',
+                  whiteSpace: 'nowrap',
+                  minHeight: '36px'
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'var(--color-bg-secondary)'
+                    e.currentTarget.style.borderColor = 'var(--color-primary-green)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.borderColor = 'transparent'
+                  }
+                }}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
 
           {/* User Section */}
           {!user ? (
@@ -271,25 +286,32 @@ export default function Header() {
             </select>
 
             {/* Mobile Links */}
-            {getRoleBasedLinks().map(link => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="btn outline"
-                style={{ 
-                  textDecoration: 'none', 
-                  justifyContent: 'flex-start', 
-                  fontFamily: 'Times New Roman, serif',
-                  fontSize: '14px',
-                  padding: '10px 12px',
-                  width: '100%'
-                }}
-                onClick={() => setShowMobileMenu(false)}
-              >
-                <span style={{ fontSize: '12px', fontWeight: 'bold', marginRight: '8px' }}>{link.icon}</span>
-                <span>{link.label}</span>
-              </Link>
-            ))}
+            {getRoleBasedLinks().map(link => {
+              const active = isLinkActive(link.to)
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="btn outline"
+                  style={{ 
+                    textDecoration: 'none', 
+                    justifyContent: 'flex-start', 
+                    fontFamily: 'Times New Roman, serif',
+                    fontSize: '14px',
+                    padding: '10px 12px',
+                    width: '100%',
+                    backgroundColor: active ? 'rgba(17, 163, 106, 0.15)' : 'transparent',
+                    borderColor: active ? 'var(--color-primary-green)' : 'var(--glass-border)',
+                    color: active ? '#0e8c5a' : 'var(--color-text-primary)',
+                    fontWeight: active ? '700' : '500'
+                  }}
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  <span style={{ fontSize: '12px', fontWeight: 'bold', marginRight: '8px' }}>{link.icon}</span>
+                  <span>{link.label}</span>
+                </Link>
+              )
+            })}
 
             {/* Mobile User Section */}
             {user && (
