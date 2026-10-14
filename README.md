@@ -1,344 +1,296 @@
-# PashuVision - AI Livestock Management System
-
-**AI-Powered Breed Recognition and Livestock Management Platform**
-
-**Live Application**: [https://pashu-vision.vercel.app/](https://pashu-vision.vercel.app/)
-
-PashuVision is a comprehensive livestock management system that uses advanced AI/ML models to identify cattle and buffalo breeds from images. Built with React and Node.js, it provides an intuitive interface for managing animal records, breed databases, and user administration.
-
-## Features
-
-### AI-Powered Breed Recognition
-- **Real-time Breed Detection**: Advanced AI models (PyTorch & ONNX) for accurate breed identification
-- **Species Detection**: Automatic cattle vs buffalo classification
-- **Crossbreed Detection**: Identifies mixed-breed animals
-- **Confidence Scoring**: Provides prediction confidence levels
-- **Multi-Image Support**: Process multiple images per animal record
-
-### User Management
-- **Role-Based Access Control**: Admin and User roles
-- **User Profile Management**: Update profile information, region, and photo
-- **Secure Authentication**: JWT-based authentication system
-- **Activity Logging**: Complete audit trail of user actions
-
-### Animal Records Management
-- **Comprehensive Records**: Track owner information, location, breed, age, and status
-- **Record Editing**: Users can edit their own records (owner name and location)
-- **Admin Controls**: Admins have full CRUD permissions
-- **QR Code Generation**: Generate QR codes for animal identification
-- **CSV Export**: Export records for external analysis
-- **Search & Filter**: Advanced filtering by breed, location, and search terms
-
-### Breed Database
-- **Breed Management**: Admin can add, edit, delete, and view breeds
-- **AI Auto-Fill**: Automatically populate breed details from AI predictions
-- **Breed Images**: Dedicated page for managing breed images
-- **Rare Breed Marking**: Mark and track rare breeds
-- **Comprehensive Details**: Store origin, description, characteristics, and admin notes
-
-### Image Management
-- **Breed Images Gallery**: View and manage all breed images
-- **Image Details**: View full image metadata including owner and user information
-- **Download Support**: Download images directly from the interface
-- **Filter by Species**: Filter images by cattle or buffalo
-
-## Quick Start
-
-### Prerequisites
-- **Node.js** 18+ 
-- **npm** or **yarn**
-- **Supabase Account** (for database)
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/bhataakib02/-PashuVision.git
-cd bpa-breed-recognition
-```
-
-2. **Backend Setup**
-```bash
-cd backend
-npm install
-```
-
-3. **Configure Environment Variables**
-Create a `.env` file in the `backend` directory:
-```env
-JWT_SECRET=your-secret-key-here
-SUPABASE_URL=your-supabase-project-url
-SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-USE_SUPABASE=true
-PORT=4000
-PYTORCH_SERVICE_URL=http://localhost:5001
-```
-
-4. **Set Up Supabase Database**
-   - Create a new Supabase project
-   - Run the SQL script from `backend/supabase-reset-database.sql` in your Supabase SQL Editor
-   - Run `backend/add-region-column.sql` to add the region column
-   - Run `backend/add-is-rare-breed-column.sql` to add the rare breed column
-   - Run `backend/update-breeds-table-columns.sql` to add breed table columns
-   - Configure RLS policies using `backend/fix-supabase-rls-policies.sql`
-
-5. **Start Backend Server**
-```bash
-cd backend
-npm run dev
-```
-
-6. **Frontend Setup** (in a new terminal)
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Access the Application
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:4000
-
-### Create Admin User
-Run the admin user creation script:
-```bash
-cd backend
-node create-admin-user.js
-```
-
-## Architecture
-
-### Backend (Node.js + Express)
-- **RESTful API**: Comprehensive API endpoints for all operations
-- **AI Models**: PyTorch and ONNX-based breed prediction models
-- **Database Service**: Supabase integration for data persistence
-- **Authentication**: JWT-based secure authentication
-- **File Upload**: Multer for handling image uploads
-- **WebSocket**: Real-time updates via Socket.IO
-
-### Frontend (React + Vite)
-- **Modern UI**: Responsive design with professional styling
-- **Component-Based**: Reusable components for consistent UI
-- **State Management**: React hooks for state management
-- **Routing**: React Router for navigation
-- **Error Handling**: Comprehensive error handling and user feedback
-
-### AI Service (Python + PyTorch)
-- **Model**: ConvNeXt Base (Quantized) - 94.6 MB
-- **Deployment**: Railway (separate microservice)
-- **API**: RESTful endpoints for breed prediction
-- **Features**: Lazy loading, automatic retry, memory optimization
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/me` - Get current user profile
-- `PUT /api/me` - Update user profile
-
-### Animal Records
-- `GET /api/animals` - List all animals (filtered by role)
-- `POST /api/animals` - Create new animal record
-- `PUT /api/animals/:id` - Update animal record
-- `DELETE /api/animals/:id` - Delete animal record
-- `POST /api/animals/:id/approve` - Approve record (admin only)
-- `POST /api/animals/:id/reject` - Reject record (admin only)
-
-### Breed Prediction
-- `POST /api/predict` - AI breed prediction from image
-- `POST /api/species` - Detect species (cattle/buffalo/non-animal)
-
-### Admin - Users
-- `GET /api/admin/users` - List all users
-- `POST /api/admin/users` - Create new user
-- `PUT /api/admin/users/:id` - Update user
-- `DELETE /api/admin/users/:id` - Delete user
-- `PUT /api/admin/users/:id/status` - Update user status
-
-### Admin - Breeds
-- `GET /api/admin/breeds` - List all breeds
-- `POST /api/admin/breeds` - Create new breed
-- `PUT /api/admin/breeds/:id` - Update breed
-- `DELETE /api/admin/breeds/:id` - Delete breed
-
-## User Roles
-
-### User
-- Create and view animal records
-- Edit own records (owner name and location only)
-- View breed information
-- Generate QR codes for records
-- Update own profile
-
-### Admin
-- All user permissions
-- Full CRUD access to all animal records
-- User management (create, edit, delete users)
-- Breed database management
-- Approve/reject animal records
-- View all records regardless of creator
-- Access breed images management page
-
-## Security Features
-
-- **JWT Authentication**: Secure token-based authentication
-- **Role-Based Access Control**: Permissions based on user roles
-- **Row Level Security**: Supabase RLS policies for data protection
-- **Input Validation**: Comprehensive data validation
-- **Password Hashing**: bcrypt for secure password storage
-- **Activity Logging**: Complete audit trail
-
-## Database Schema
-
-The application uses Supabase (PostgreSQL) with the following main tables:
-
-- **users**: User accounts and profiles
-- **animals**: Animal records with breed, owner, and location information
-- **breeds**: Breed database with characteristics and images
-- **activity_logs**: System activity and audit logs
-
-## Technology Stack
-
-### Backend
-- **Node.js** - Runtime environment
-- **Express** - Web framework
-- **Supabase** - Database and backend services
-- **JWT** - Authentication
-- **Multer** - File upload handling
-- **Socket.IO** - Real-time communication
-- **PyTorch/ONNX** - AI model inference
-
-### Frontend
-- **React** - UI framework
-- **Vite** - Build tool
-- **React Router** - Routing
-- **Chart.js** - Data visualization
-- **QR Code** - QR code generation
-
-### AI Service
-- **Python** - Runtime environment
-- **PyTorch** - Deep learning framework
-- **Flask** - Web framework
-- **Gunicorn** - WSGI HTTP server
-- **ConvNeXt** - Model architecture
-
-## Development
-
-### Project Structure
-```
-bpa-breed-recognition/
-├── backend/
-│   ├── src/
-│   │   ├── ai/          # AI model predictors
-│   │   ├── services/    # Business logic services
-│   │   └── server.js    # Main server file
-│   ├── models/          # AI model files
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/  # Reusable components
-│   │   ├── pages/       # Page components
-│   │   ├── services/    # Frontend services
-│   │   └── utils/       # Utility functions
-│   └── package.json
-└── README.md
-```
-
-### Running in Development
-```bash
-# Backend
-cd backend
-npm run dev
-
-# Frontend (new terminal)
-cd frontend
-npm run dev
-
-# Python AI Service (optional, for local development)
-cd backend/models
-python pytorch_service.py
-```
-
-## Deployment
-
-### Environment Variables
-
-**Backend (Vercel)**
-- `JWT_SECRET`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `USE_SUPABASE=true`
-- `PYTORCH_SERVICE_URL` - Railway Python service URL
-- `PORT`
-
-**Python Service (Railway)**
-- `MODEL_DOWNLOAD_URL_QUANTIZED` - Quantized model URL (recommended)
-- `MODEL_DOWNLOAD_URL` - Original model URL (fallback)
-- `PORT` - Railway sets this automatically
-
-### Build for Production
-```bash
-# Frontend
-cd frontend
-npm run build
-
-# Backend
-cd backend
-npm start
-```
-
-### Deployment Platforms
-- **Frontend & Backend**: Vercel
-- **AI Service**: Railway
-- **Database**: Supabase
-
-## AI Model Details
-
-- **Architecture**: ConvNeXt Base (Quantized)
-- **Model Size**: 94.6 MB (quantized from 1GB)
-- **Accuracy**: ~69.5-70% (minimal loss from quantization)
-- **Classes**: 41 cattle and buffalo breeds
-- **Quantization**: INT8 dynamic quantization
-- **Source**: GitHub Releases v2.0
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For issues, questions, or contributions, please open an issue on GitHub.
-
-## Acknowledgments
-
-### Core Contributors
-- **Mohammad Aakib Bhat** ([@bhataakib02](https://github.com/bhataakib02)) - Full Stack Web Development
-- **Haroon Iqbal** ([@Haroon-89](https://github.com/Haroon-89)) - AI/ML Development & Data Science
-- **Akeem Ali** ([@Akeem786](https://github.com/Akeem786)) - – Livestock Domain Research & Practical Inputs
-- 
-
-### Open Source Libraries & Tools
-- ONNX Runtime team for AI inference
-- React and Node.js communities
-- Supabase for backend infrastructure
-- PyTorch and timm for model architecture
-- All open-source contributors
-
-For a complete list of contributors, see [CONTRIBUTORS.md](CONTRIBUTORS.md).
+# 🐄 PashuVision — AI Livestock Management System
+
+![Banner](https://capsule-render.vercel.app/api?type=waving&color=0:0d1117,100:0a1f0a&height=200&section=header&text=PashuVision&fontSize=52&fontColor=4ade80&animation=twinkling&fontAlignY=35&desc=AI%20Breed%20Recognition%20%2B%20Intelligent%20Livestock%20Management&descAlignY=55&descColor=bbf7d0)
+
+<p align="center">
+  <strong>Next-Generation AI Breed Recognition & Intelligent Livestock Management Platform</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite-61DAFB?style=flat-square&logo=react" alt="React 19" />
+  <img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Express-339933?style=flat-square&logo=node.js" alt="Node.js" />
+  <img src="https://img.shields.io/badge/AI%20Microservice-PyTorch%20%7C%20Flask-EE4C2C?style=flat-square&logo=pytorch" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/Database-Supabase%20%2F%20Local%20JSON-3ECF8E?style=flat-square&logo=supabase" alt="Database" />
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License" />
+</p>
+
+<p align="center">
+  <a href="https://pashu-vision-five.vercel.app/">
+    <img src="https://img.shields.io/badge/🔴%20Live%20Demo-pashu--vision--five.vercel.app-4ade80?style=for-the-badge&logo=vercel&logoColor=white" />
+  </a>
+</p>
 
 ---
 
-**Built with care for modern livestock management**
+## 📌 Overview
 
-**PashuVision** - Transforming livestock management through AI technology
+**PashuVision** is an end-to-end digital livestock management ecosystem powered by deep learning computer vision models. It enables farmers, veterinarians, breeding centers, and agricultural administrators to accurately identify indigenous and exotic cattle and buffalo breeds from photographs, track individual animal health records, manage vaccinations, and generate unique QR passports.
+
+- 📱 **Full-Stack Architecture**: React (Vite) + Node.js (Express) + Python (PyTorch Flask Microservice)
+
+> 🔴 **Try it live:** [pashu-vision-five.vercel.app](https://pashu-vision-five.vercel.app/)
+
+---
+
+## ✨ Key Features
+
+### 🧠 1. AI-Powered Breed Identification
+- **Real-Time Visual Classification**: Deep learning inference using a quantized **ConvNeXt Base** network covering 41 indigenous and exotic cattle/buffalo breeds.
+- **Species Classification**: Automatic distinction between Cattle (*Bos taurus/indicus*) and Buffalo (*Bubalus bubalis*).
+- **Crossbreed & Trait Detection**: Identification of common hybrid breeds with confidence scores and descriptive phenotypic traits.
+- **Lazy Loading & Memory Optimization**: Model loads on-demand with INT8 quantization (94.6 MB) for high responsiveness on consumer hardware.
+
+### 📋 2. Digital Animal Health & Passport Records
+- **Unique Animal Profiles**: Manage age, gender, ownership history, tags, lactation cycle, and geolocation.
+- **Dynamic QR Code Generation**: Instantly generate scannable QR tags for each animal, linking directly to its health history.
+- **Vaccination & Health Log**: Track pending vaccinations, medical treatments, and seasonal health alerts.
+- **Export Capabilities**: Export animal logs and herd statistics to CSV or Excel for offline reporting.
+
+### 🛡️ 3. Role-Based Access Control (RBAC)
+- **Role Permissions**: Tiered privilege levels for Administrators, Field Officers, and Farmers.
+- **Record Management**: Users can create, update, and manage their assigned animal profiles; Admins have full review and verification workflows.
+- **Audit Trails**: Built-in security logging for animal status updates, approvals, and credential modifications.
+
+### 📚 4. Comprehensive Breed Catalog
+- **Curated Database**: Detailed profiles for registered breeds including origin, physical characteristics, milk yield potential, and climate adaptability.
+- **Rare Breed Tagging**: Special identification for endangered indigenous breeds to support conservation efforts.
+- **Admin Management**: Full CRUD interface for adding and updating breed benchmarks.
+
+### 🌐 5. Real-Time & Offline Resilience
+- **Hybrid Storage Engine**: Seamlessly runs with **Supabase (PostgreSQL)** in cloud deployments and automatically falls back to **Local JSON file storage** during offline or local development.
+- **WebSocket Synchronization**: Live updates via Socket.IO for status changes and notifications.
+
+---
+
+## 🏗️ Architecture & Technology Stack
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Client Browser                         │
+│             React 19 + Vite + TailwindCSS                   │
+│                 (Port: 5173 / Vercel)                       │
+└───────────────────────────────┬─────────────────────────────┘
+                                │ HTTP / WebSocket
+┌───────────────────────────────▼─────────────────────────────┐
+│                   Backend API Gateway                       │
+│                Node.js + Express Server                     │
+│                (Port: 4000 / Local/Vercel)                  │
+└───────────────┬─────────────────────────────┬───────────────┘
+                │                             │
+    HTTP Proxy / Internal Call                │
+                │                             ▼
+┌───────────────▼─────────────┐ ┌─────────────────────────────┐
+│     AI Model Microservice   │ │       Database Layer        │
+│   Python Flask + PyTorch    │ │  • Supabase (PostgreSQL)    │
+│    ConvNeXt Quantized       │ │  • Local JSON Data Fallback │
+│   (Port: 5001 / Railway)    │ └─────────────────────────────┘
+└─────────────────────────────┘
+```
+
+### Stack Breakdown
+
+| Layer | Technologies Used |
+|---|---|
+| **Frontend** | React 19, Vite, React Router 6, Chart.js, TailwindCSS, Socket.io-client, QRcode.react |
+| **Backend** | Node.js 22, Express, Socket.IO, Multer, JWT, bcryptjs, @supabase/supabase-js |
+| **AI / ML** | Python 3.11/3.12, PyTorch, Torchvision, Flask, Flask-CORS, Pillow, OpenCV |
+| **Model** | ConvNeXt Base (Quantized INT8, ~94.6 MB, 41 classes) |
+| **Database** | Supabase (PostgreSQL with RLS) or Local File Storage (`backend/data/`) |
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+- **Node.js**: v18.0.0 or later (v20+ / v22 recommended)
+- **Python**: v3.11 or v3.12 (with `torch` and `flask` installed)
+- **Git**
+
+> 💡 Want to skip local setup entirely? Check out the **[live demo](https://pashu-vision-five.vercel.app/)** instead.
+
+---
+
+### Option A: One-Command All-in-One Startup (Recommended)
+
+From the project root:
+
+```bash
+# 1. Install workspace dependencies
+npm install
+
+# 2. Run all 3 services concurrently (AI Service + Backend + Frontend)
+npm run dev
+```
+
+> **Windows Users**: You can also double-click `run_project.bat` to launch all services automatically.
+
+---
+
+### Option B: Step-by-Step Manual Startup
+
+#### Step 1: AI Model Microservice (Port 5001)
+```bash
+cd backend/models
+python pytorch_service.py
+# Or using Python launcher:
+# py -3.12 pytorch_service.py
+```
+*Health check URL: http://localhost:5001/health*
+
+#### Step 2: Node.js Backend Server (Port 4000)
+```bash
+cd backend
+npm install
+npm run dev
+```
+*API Base URL: http://localhost:4000*
+
+#### Step 3: Frontend Development App (Port 5173)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*Access Web App: http://localhost:5173*
+
+---
+
+## ⚙️ Configuration & Environment Variables
+
+### Backend (`backend/.env`)
+```env
+PORT=4000
+NODE_ENV=development
+JWT_SECRET=your-secure-jwt-secret
+PYTORCH_SERVICE_URL=http://localhost:5001
+
+# Optional: Supabase Database (if omitted, local JSON database is used automatically)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+### Frontend (`frontend/.env`)
+```env
+VITE_API_URL=http://localhost:4000
+```
+
+---
+
+## 📡 Key API Endpoints
+
+### 🔐 Authentication
+- `POST /api/auth/register` — Register a new account
+- `POST /api/auth/login` — Authenticate and receive JWT token
+- `GET  /api/me` — Retrieve logged-in user profile
+- `PUT  /api/me` — Update user profile details and avatar
+
+### 🐂 Animal Records
+- `GET    /api/animals` — List animal records (role-filtered)
+- `POST   /api/animals` — Create an animal record with photo upload
+- `GET    /api/animals/:id` — Retrieve full record details
+- `PUT    /api/animals/:id` — Update record details
+- `DELETE /api/animals/:id` — Remove record (Admin or Owner)
+- `POST   /api/animals/:id/approve` — Verify and approve record (Admin)
+
+### 🤖 AI Breed Inference
+- `POST /api/predict` — Submit an animal photo for multi-breed identification & confidence metrics
+- `POST /api/species` — Classify species (Cattle vs. Buffalo vs. Non-animal)
+
+### 📊 Breed Management (Admin)
+- `GET    /api/admin/breeds` — Fetch full breed database
+- `POST   /api/admin/breeds` — Add new breed entry
+- `PUT    /api/admin/breeds/:id` — Update breed metadata
+- `DELETE /api/admin/breeds/:id` — Delete breed entry
+
+---
+
+## ☁️ Deployment
+
+> 🔴 **Live Frontend:** [pashu-vision-five.vercel.app](https://pashu-vision-five.vercel.app/)
+
+PashuVision follows a decoupled deployment architecture — the React frontend is hosted on **Vercel**, while the Node.js backend and PyTorch AI microservice can be deployed to any persistent host (e.g., Railway, Render, Fly.io, AWS, or Docker VPS).
+
+---
+
+## 📂 Project Structure
+
+```
+PashuVision/
+├── backend/
+│   ├── data/                 # Local JSON database & file store
+│   ├── models/               # PyTorch model checkpoints & Python service
+│   │   ├── pytorch_service.py # Flask AI microservice
+│   │   └── requirements.txt  # Python requirements
+│   ├── src/
+│   │   ├── ai/               # Model caller adapters (PyTorchPredictor)
+│   │   ├── services/         # Database, Notifications & Business Logic
+│   │   └── server.js         # Express main entry point
+│   └── package.json
+│
+├── frontend/
+│   ├── public/               # Static assets & icons
+│   ├── src/
+│   │   ├── components/       # Reusable UI widgets, Modals, Navbar
+│   │   ├── pages/            # Dashboard, Predict, Animals, Breeds, Admin
+│   │   ├── services/         # API integration services
+│   │   └── App.jsx           # Main routing & state
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+│
+├── run_ai.js                 # Automatic Python version resolver & runner
+├── run_project.bat           # Windows quick-launcher script
+└── package.json              # Fullstack workspace orchestrator
+```
+
+---
+
+## 🤖 AI Model Specifications
+
+- **Base Architecture**: ConvNeXt Base
+- **Optimization**: INT8 Dynamic Quantization
+- **Weight Footprint**: ~94.6 MB (reduced from ~1.0 GB)
+- **Supported Classes**: 41 Cattle & Buffalo Breeds
+- **Inference Latency**: ~120ms - 350ms on standard CPU
+- **Hardware Requirement**: Runs on standard CPU; GPU acceleration (CUDA) supported if available
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
+
+1. **Fork** the repository
+2. **Create** your feature branch (`git checkout -b feature/NewFeature`)
+3. **Commit** your changes (`git commit -m 'feat: add new feature'`)
+4. **Push** to your branch (`git push origin feature/NewFeature`)
+5. Open a **Pull Request**
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **PyTorch & timm** communities for model architectures and weights.
+- **ONNX Runtime** team for lightweight inference tooling.
+- **Supabase** for managed database and auth primitives.
+- **React & Vite** communities for modern frontend tooling.
+- For complete contributor details and history, see [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
+---
+
+<p align="center">
+  <strong>PashuVision</strong> — <em>Empowering Livestock Agriculture Through Intelligent Vision</em>
+</p>
+
+<p align="center">
+  🔴 <a href="https://pashu-vision-five.vercel.app/"><strong>Live Demo</strong></a> &nbsp;•&nbsp; ⭐ If you found this project helpful, please <strong>star the repo</strong> and share it!
+</p>
+
+![Footer](https://capsule-render.vercel.app/api?type=waving&color=0:0a1f0a,100:0d1117&height=120&section=footer&fontColor=4ade80)
